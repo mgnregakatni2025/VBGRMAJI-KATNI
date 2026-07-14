@@ -1,0 +1,29 @@
+name: Auto Refresh Data
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # हर 15 मिनट में अपने आप चलेगा
+  workflow_dispatch: # मैनुअल रन करने का बटन देने के लिए
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Run Scraper
+      run: python scraper.py
+
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@://github.com"
+        git add index.html
+        git commit -m "Data updated" || exit 0
+        git push
