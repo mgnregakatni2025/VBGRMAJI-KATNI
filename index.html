@@ -502,30 +502,3 @@ function applyFilters() {
 
 </body>
 </html>
-```
-
----
-
-## 📝 इस्तेमाल करने के स्टेप्स
-
-1. पुरानी `dashboard.html` को पूरी तरह हटा कर ऊपर वाला नया कोड पेस्ट करें
-2. GitHub पर अपलोड (Commit changes) करें
-3. Dashboard पेज को **Hard Refresh** करें: `Ctrl + Shift + R`
-4. **F12 → Console** खोल कर चेक करें — अब वहां आपको दिखेगा:
-   - `🔗 Groups मिले:` — 5 groups (KANHWARA, PAHARI, CHAKA, JUHLA, PIPRODH) दिखने चाहिए
-   - `✅ Flat rawData:` — सभी पंचायतों की लिस्ट labour value के साथ
-
----
-
-## 🎯 अब Dashboard में क्या दिखेगा
-
-| Feature | विवरण |
-|---|---|
-| Summary Cards | कुल पंचायतें, कुल रेंज, कुल Labour, Dysfunctional, Zero count |
-| Bar Chart | हर Range (KANHWARA, PAHARI, आदि) का कुल Expected Labour |
-| Pie Chart | Zero vs Non-Zero पंचायतों का अनुपात |
-| Zero Alert List | जैसे: DIDHWARA (Mukesh), PILOJI (Mukesh), KHMTRA (Mukesh) आदि |
-| उपयंत्री-वार Table | हर उपयंत्री के नीचे उसकी पंचायतें + Labour value, Zero वाली लाल हाईलाइट |
-| Search + Filter | पंचायत नाम खोजें या उपयंत्री/रेंज से filter करें |
-
-यह अब आपके **असली डेटा structure** के हिसाब से सही काम करेगा। कोड लगाने के बाद अगर फिर भी कोई समस्या आए, तो Console (F12) में दिख रहे Log का स्क्रीनशॉट भेज दें, मैं तुरंत ठीक कर दूंगा।
