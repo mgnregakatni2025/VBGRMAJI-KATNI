@@ -1,26 +1,21 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
     <meta charset="utf-8">
-    <title>VB-GRAM G LIVE DATA</title>
+    <!-- यह लाइन आपकी वेबसाइट को हर 5 मिनट में अपने आप रिफ्रेश करेगी ताकि एक्सेल का नया डेटा दिखता रहे -->
+    <meta http-equiv="refresh" content="300">
+    <title>VB-GRAM G LIVE REPORT</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        #loading { font-size: 18px; color: #666; margin-top: 50px; font-weight: bold; }
-        iframe { width: 100%; height: 90vh; border: none; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        body { margin: 0; padding: 0; background-color: #f4f4f4; text-align: center; }
+        .container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
-    <div id="loading">सरकारी पोर्टल से लाइव डेटा सुरक्षित रूप से कनेक्ट किया जा रहा है, कृपया प्रतीक्षा करें...</div>
-    
-    <!-- यह लाइन सीधे आपके ब्राउज़र का उपयोग करके लाइव पेज को आपके सामने लोड कर देगी -->
-    <iframe id="dataFrame" src="https://dord.gov.in" onload="document.getElementById('loading').style.display='none';"></iframe>
 
-    <script>
-        // हर 5 मिनट में डेटा को अपने आप रिफ्रेश करने के लिए
-        setInterval(function() {
-            document.getElementById('dataFrame').src = document.getElementById('dataFrame').src;
-        }, 300000);
-    </script>
+    <div class="container">
+      <iframe width="700" height="900" frameborder="0" scrolling="no" src="https://1drv.ms/x/c/7E0D01842E60B248/IQSL1OgrEHIMSq9IZpBY3imPAVlB2LCB2tn0hArEe2COe8Y?em=2&wdAllowInteractivity=False&Item=Table_1&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edaebf=rslc0"></iframe>
+       
+    </div>
+
 </body>
 </html>
