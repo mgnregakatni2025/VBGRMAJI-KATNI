@@ -2,13 +2,55 @@
 <html lang="hi">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="refresh" content="300">
     <title>VB-GRAM G LIVE REPORT</title>
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #ffffff; }
-        .wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: top; padding-top: 10px; }
-        iframe { width: 98% !important; height: 95vh !important; border: 2px solid #cbd5e1 !important; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden !important; }
+        /* पूरी स्क्रीन को लॉक और बैकग्राउंड सेट करने के लिए */
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: #f8fafc; 
+            font-family: Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* कंटेनर जो मोबाइल और कंप्यूटर दोनों पर सही फिट बैठेगा */
+        .wrapper { 
+            width: 100%; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: stretch; 
+            box-sizing: border-box;
+            padding: 10px;
+        }
+        
+        /* एक्सेल फ्रेम की सेटिंग्स: मोबाइल पर स्क्रॉलिंग इनेबल करने के लिए */
+        iframe { 
+            width: 100% !important; 
+            height: 100% !important; 
+            border: 1px solid #cbd5e1 !important; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05); 
+            background-color: #ffffff;
+            /* मोबाइल पर स्मूथ टच और स्क्रॉलिंग के लिए */
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        /* 📱 विशेष मोबाइल स्क्रीन (768px से छोटी स्क्रीन) के लिए सेटिंग्स */
+        @media screen and (max-width: 768px) {
+            .wrapper {
+                padding: 5px; /* मोबाइल पर बॉर्डर स्पेस कम करना */
+            }
+            iframe {
+                border-radius: 8px;
+                /* मोबाइल पर यदि डेटा बड़ा है तो उसे फ्रेम के अंदर मूव करने की अनुमति देना */
+                overflow: auto !important; 
+            }
+        }
     </style>
 </head>
 <body>
