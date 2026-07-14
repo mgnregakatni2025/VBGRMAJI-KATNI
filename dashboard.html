@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>मनरेगा डैशबोर्ड - कटनी</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    header {
+        background: linear-gradient(135deg, #1e5631, #2e8b57);
+        color: white;
+        padding: 20px 15px;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { margin: 0; font-size: 22px; }
+    header p { margin: 5px 0 0; font-size: 13px; opacity: 0.9; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+
+    /* ---- Summary Cards ---- */
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border-top: 4px solid #2e8b57;
+    }
+    .card h3 { margin: 0; font-size: 24px; color: #1e5631; }
+    .card p { margin: 5px 0 0; font-size: 12px; color: #666; }
+    .card.alert { border-top-color: #d9534f; }
+    .card.alert h3 { color: #d9534f; }
+
+    /* ---- Charts ---- */
+    .chart-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    .chart-box {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .chart-box h3 { margin-top: 0; font-size: 16px; color: #1e5631; }
+    canvas { max-width: 100%; }
+
+    /* ---- Search Box ---- */
+    .search-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    .search-bar input, .search-bar select {
+        flex: 1;
+        min-width: 150px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    /* ---- Zero Engagement Alert Box ---- */
+    .zero-box {
+        background: #fff3f3;
+        border: 1px solid #f5c6cb;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .zero-box h3 { color: #d9534f; margin-top: 0; }
+    .zero-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .zero-tag {
+        background: #d9534f;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+    }
+
+    /* ---- Engineer Group Section ---- */
+    .engg-group {
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .engg-header {
+        background: #2e8b57;
+        color: white;
+        padding: 12px 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        font-size: 15px;
+    }
+    .engg-header span.badge {
+        background: white;
+        color: #2e8b57;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+    .engg-body { display: none; overflow-x: auto; }
+    .engg-body.open { display: block; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        min-width: 700px;
+    }
+    th, td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        white-space: nowrap;
+    }
+    th {
+        background: #f0f7f2;
+        color: #1e5631;
+        position: sticky;
+        top: 0;
+    }
+    td.panchayat-name { text-align: left; font-weight: 500; }
+    tr.zero-row { background: #ffe8e8 !important; }
+    tr:hover { background: #f9f9f9; }
+
+    footer {
+        text-align: center;
+        padding: 15px;
+        color: #888;
+        font-size: 12px;
+    }
+
+    /* ---- Mobile Responsive ---- */
+    @media (max-width: 768px) {
+        .chart-section { grid-template-columns: 1fr; }
+        header h1 { font-size: 18px; }
+        .card h3 { font-size: 20px; }
+        th, td { font-size: 12px; padding: 6px; }
+    }
+
+    .loading {
+        text-align: center;
+        padding: 50px;
+        font-size: 16px;
+        color: #666;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>📊 मनरेगा उपयंत्री-वार पंचायत डैशबोर्ड (कटनी)</h1>
+    <p id="lastUpdated">डेटा लोड हो रहा है...</p>
+</header>
+
+<div class="container">
+
+    <div id="loadingMsg" class="loading">⏳ डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...</div>
+
+    <div id="dashboardContent" style="display:none;">
+
+        <!-- Summary Cards -->
+        <div class="cards" id="summaryCards"></div>
+
+        <!-- Charts -->
+        <div class="chart-section">
+            <div class="chart-box">
+                <h3>उपयंत्री-वार Maximum Expected Unskilled Labour Engagement</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Zero बनाम Non-Zero Engagement पंचायतें</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Zero Engagement Alert -->
+        <div class="zero-box">
+            <h3>⚠️ Maximum Expected Unskilled Labour Engagement = 0 वाली पंचायतें</h3>
+            <div class="zero-list" id="zeroList"></div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 पंचायत का नाम खोजें...">
+            <select id="enggFilter">
+                <option value="">सभी उपयंत्री</option>
+            </select>
+        </div>
+
+        <!-- Engineer Wise Groups -->
+        <div id="enggGroups"></div>
+
+    </div>
+</div>
+
+<footer>Auto-generated Dashboard | Data Source: GitHub Repository</footer>
+
+<script>
+// =========================================================
+// ⚠️ यहाँ अपनी GitHub RAW JSON फाइल का URL डालें
+// Format: https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/data.json
+// =========================================================
+const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/main/data.json";
+
+let rawData = [];
+let headers = [];
+let COL = {}; // column index mapping
+
+fetch(DATA_URL + "?t=" + new Date().getTime()) // cache बस्टिंग
+    .then(res => res.json())
+    .then(json => {
+        processData(json);
+    })
+    .catch(err => {
+        document.getElementById('loadingMsg').innerHTML =
+            "❌ डेटा लोड करने में त्रुटि: " + err + "<br>कृपया DATA_URL चेक करें।";
+    });
+
+function processData(json) {
+    if (!json || json.length === 0) {
+        document.getElementById('loadingMsg').innerText = "डेटा उपलब्ध नहीं है।";
+        return;
+    }
+
+    headers = json[0];
+
+    // Column index मैपिंग (header नाम के हिसाब से, ताकि क्रम बदलने पर भी काम करे)
+    COL.sno = headers.indexOf("SNo.");
+    COL.panchayat = headers.indexOf("Panchayats");
+    COL.totalGP = headers.indexOf("Total No. of Gram Panchayats (GPs)");
+    COL.gpWithWorks = findCol("No. of Gram Panchayats");
+    COL.maxExpected = findCol("Maximum Expected Unskilled Labour");
+    COL.ongoingMR = findCol("No. of Ongoing Works");
+    COL.workersNoKYC = findCol("Workers without");
+    COL.musterRolls = findCol("No. of Muster Rolls");
+    COL.engg = headers.indexOf("ENGG_NAME");
+
+    // डेटा rows को साफ करना - Total row, #N/A, header duplicate rows हटाना
+    rawData = json.slice(1).filter(row => {
+        let panchayatName = (row[COL.panchayat] || "").toString().trim();
+        let enggName = (row[COL.engg] || "").toString().trim();
+        if (panchayatName === "" || panchayatName.toLowerCase() === "total") return false;
+        if (enggName === "#N/A" || enggName === "") return false;
+        if (!isNaN(panchayatName) && panchayatName.length < 3) return false; // junk numeric row हटाना
+        return true;
+    });
+
+    renderDashboard();
+}
+
+function findCol(partial) {
+    return headers.findIndex(h => h && h.toString().includes(partial));
+}
+
+function toNum(val) {
+    let n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+}
+
+function renderDashboard() {
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+    document.getElementById('lastUpdated').innerText =
+        "अंतिम अपडेट: " + new Date().toLocaleString('hi-IN');
+
+    // ---------- Summary Totals ----------
+    let totalPanchayats = rawData.length;
+    let totalGP = sumCol(COL.totalGP);
+    let totalGPWithWorks = sumCol(COL.gpWithWorks);
+    let totalMaxExpected = sumCol(COL.maxExpected);
+    let totalOngoingMR = sumCol(COL.ongoingMR);
+    let totalNoKYC = sumCol(COL.workersNoKYC);
+    let totalMR = sumCol(COL.musterRolls);
+    let zeroCount = rawData.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+
+    document.getElementById('summaryCards').innerHTML = `
+        <div class="card"><h3>${totalPanchayats}</h3><p>कुल पंचायतें</p></div>
+        <div class="card"><h3>${totalGP}</h3><p>Total GPs</p></div>
+        <div class="card"><h3>${totalGPWithWorks}</h3><p>GPs with Works in Progress</p></div>
+        <div class="card"><h3>${totalMaxExpected}</h3><p>Max Expected Labour Engagement</p></div>
+        <div class="card"><h3>${totalOngoingMR}</h3><p>Ongoing Works with MRs</p></div>
+        <div class="card"><h3>${totalNoKYC}</h3><p>Workers without e-KYC</p></div>
+        <div class="card"><h3>${totalMR}</h3><p>Total Muster Rolls</p></div>
+        <div class="card alert"><h3>${zeroCount}</h3><p>⚠️ Zero Engagement पंचायतें</p></div>
+    `;
+
+    // ---------- Group by Engineer ----------
+    let enggMap = {};
+    rawData.forEach(row => {
+        let engg = row[COL.engg] || "अज्ञात";
+        if (!enggMap[engg]) enggMap[engg] = [];
+        enggMap[engg].push(row);
+    });
+
+    // Engineer dropdown भरना
+    let enggFilter = document.getElementById('enggFilter');
+    Object.keys(enggMap).forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e; opt.innerText = e;
+        enggFilter.appendChild(opt);
+    });
+
+    // ---------- Zero Engagement List ----------
+    let zeroList = document.getElementById('zeroList');
+    let zeroRows = rawData.filter(r => toNum(r[COL.maxExpected]) === 0);
+    if (zeroRows.length === 0) {
+        zeroList.innerHTML = "<p style='color:green;'>✅ कोई भी पंचायत Zero Engagement में नहीं है।</p>";
+    } else {
+        zeroList.innerHTML = zeroRows.map(r =>
+            `<span class="zero-tag">${r[COL.panchayat]} (${r[COL.engg]})</span>`
+        ).join('');
+    }
+
+    // ---------- Charts ----------
+    renderCharts(enggMap);
+
+    // ---------- Engineer Wise Table Groups ----------
+    renderEnggGroups(enggMap);
+
+    // ---------- Search & Filter ----------
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('enggFilter').addEventListener('change', applyFilters);
+}
+
+function sumCol(colIndex) {
+    return rawData.reduce((sum, row) => sum + toNum(row[colIndex]), 0);
+}
+
+function renderCharts(enggMap) {
+    let labels = Object.keys(enggMap);
+    let data = labels.map(e => enggMap[e].reduce((s, r) => s + toNum(r[COL.maxExpected]), 0));
+
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Max Expected Labour Engagement',
+                data: data,
+                backgroundColor: '#2e8b57'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    let zeroCount = rawData.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+    let nonZeroCount = rawData.length - zeroCount;
+
+    new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Zero Engagement', 'Non-Zero Engagement'],
+            datasets: [{
+                data: [zeroCount, nonZeroCount],
+                backgroundColor: ['#d9534f', '#2e8b57']
+            }]
+        },
+        options: { responsive: true }
+    });
+}
+
+function renderEnggGroups(enggMap) {
+    let container = document.getElementById('enggGroups');
+    container.innerHTML = '';
+
+    Object.keys(enggMap).forEach((engg, idx) => {
+        let rows = enggMap[engg];
+        let zeroInGroup = rows.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+
+        let groupDiv = document.createElement('div');
+        groupDiv.className = 'engg-group';
+        groupDiv.setAttribute('data-engg', engg);
+
+        let tableRows = rows.map(row => {
+            let isZero = toNum(row[COL.maxExpected]) === 0;
+            return `<tr class="${isZero ? 'zero-row' : ''}" data-panchayat="${(row[COL.panchayat]||'').toLowerCase()}">
+                <td>${row[COL.sno] || ''}</td>
+                <td class="panchayat-name">${row[COL.panchayat] || ''}</td>
+                <td>${row[COL.totalGP] || 0}</td>
+                <td>${row[COL.gpWithWorks] || 0}</td>
+                <td>${row[COL.maxExpected] || 0}</td>
+                <td>${row[COL.ongoingMR] || 0}</td>
+                <td>${row[COL.workersNoKYC] || 0}</td>
+                <td>${row[COL.musterRolls] || 0}</td>
+            </tr>`;
+        }).join('');
+
+        groupDiv.innerHTML = `
+            <div class="engg-header" onclick="toggleGroup(${idx})">
+                <span>👷 उपयंत्री: ${engg} (कुल पंचायतें: ${rows.length})</span>
+                <span class="badge">${zeroInGroup} Zero</span>
+            </div>
+            <div class="engg-body" id="group-${idx}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SNo.</th><th>पंचायत</th><th>Total GPs</th>
+                            <th>GPs with Works</th><th>Max Expected Labour</th>
+                            <th>Ongoing Works(MR)</th><th>No e-KYC</th><th>Muster Rolls</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+            </div>
+        `;
+        container.appendChild(groupDiv);
+    });
+
+    // पहला group by-default खुला रखें
+    if (Object.keys(enggMap).length > 0) toggleGroup(0);
+}
+
+function toggleGroup(idx) {
+    let body = document.getElementById('group-' + idx);
+    body.classList.toggle('open');
+}
+
+function applyFilters() {
+    let searchVal = document.getElementById('searchInput').value.toLowerCase();
+    let enggVal = document.getElementById('enggFilter').value;
+
+    document.querySelectorAll('.engg-group').forEach(group => {
+        let groupEngg = group.getAttribute('data-engg');
+        let showGroup = !enggVal || groupEngg === enggVal;
+
+        let anyRowVisible = false;
+        group.querySelectorAll('tbody tr').forEach(row => {
+            let name = row.getAttribute('data-panchayat');
+            let match = name.includes(searchVal);
+            row.style.display = match ? '' : 'none';
+            if (match) anyRowVisible = true;
+        });
+
+        group.style.display = (showGroup && anyRowVisible) ? '' : 'none';
+        if (showGroup && anyRowVisible && searchVal) {
+            group.querySelector('.engg-body').classList.add('open');
+        }
+    });
+}
+</script>
+
+</body>
+</html>
