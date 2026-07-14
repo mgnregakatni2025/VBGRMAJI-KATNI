@@ -3,17 +3,18 @@ name: Auto Refresh Data
 on:
   schedule:
     - cron: '*/15 * * * *' # हर 15 मिनट में अपने आप चलेगा
-  workflow_dispatch: # मैनुअल रन करने का बटन देने के लिए
+  workflow_dispatch: # मैनुअल रन करने का बटन
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
+    # नए Node 24 को सपोर्ट करने वाले वर्शन्स (v4 और v5) का उपयोग किया गया है
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
