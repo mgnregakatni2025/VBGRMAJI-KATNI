@@ -26,7 +26,6 @@
 
     .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
 
-    /* ---- Summary Cards ---- */
     .cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -46,7 +45,6 @@
     .card.alert { border-top-color: #d9534f; }
     .card.alert h3 { color: #d9534f; }
 
-    /* ---- Charts ---- */
     .chart-section {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -62,7 +60,6 @@
     .chart-box h3 { margin-top: 0; font-size: 16px; color: #1e5631; }
     canvas { max-width: 100%; }
 
-    /* ---- Search Box ---- */
     .search-bar {
         display: flex;
         gap: 10px;
@@ -78,7 +75,6 @@
         font-size: 14px;
     }
 
-    /* ---- Zero Engagement Alert Box ---- */
     .zero-box {
         background: #fff3f3;
         border: 1px solid #f5c6cb;
@@ -91,6 +87,8 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        max-height: 200px;
+        overflow-y: auto;
     }
     .zero-tag {
         background: #d9534f;
@@ -100,7 +98,6 @@
         font-size: 12px;
     }
 
-    /* ---- Engineer Group Section ---- */
     .engg-group {
         background: white;
         border-radius: 10px;
@@ -118,6 +115,8 @@
         align-items: center;
         font-weight: bold;
         font-size: 15px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     .engg-header span.badge {
         background: white;
@@ -126,6 +125,10 @@
         border-radius: 12px;
         font-size: 12px;
     }
+    .engg-header span.badge.zero-badge {
+        background: #d9534f;
+        color: white;
+    }
     .engg-body { display: none; overflow-x: auto; }
     .engg-body.open { display: block; }
 
@@ -133,7 +136,7 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
-        min-width: 700px;
+        min-width: 400px;
     }
     th, td {
         padding: 8px 10px;
@@ -144,8 +147,6 @@
     th {
         background: #f0f7f2;
         color: #1e5631;
-        position: sticky;
-        top: 0;
     }
     td.panchayat-name { text-align: left; font-weight: 500; }
     tr.zero-row { background: #ffe8e8 !important; }
@@ -158,7 +159,6 @@
         font-size: 12px;
     }
 
-    /* ---- Mobile Responsive ---- */
     @media (max-width: 768px) {
         .chart-section { grid-template-columns: 1fr; }
         header h1 { font-size: 18px; }
@@ -171,6 +171,7 @@
         padding: 50px;
         font-size: 16px;
         color: #666;
+        white-space: pre-wrap;
     }
 </style>
 </head>
@@ -187,13 +188,11 @@
 
     <div id="dashboardContent" style="display:none;">
 
-        <!-- Summary Cards -->
         <div class="cards" id="summaryCards"></div>
 
-        <!-- Charts -->
         <div class="chart-section">
             <div class="chart-box">
-                <h3>उपयंत्री-वार Maximum Expected Unskilled Labour Engagement</h3>
+                <h3>रेंज/उपयंत्री-वार कुल Expected Labour Engagement</h3>
                 <canvas id="barChart"></canvas>
             </div>
             <div class="chart-box">
@@ -202,21 +201,18 @@
             </div>
         </div>
 
-        <!-- Zero Engagement Alert -->
         <div class="zero-box">
-            <h3>⚠️ Maximum Expected Unskilled Labour Engagement = 0 वाली पंचायतें</h3>
+            <h3>⚠️ Expected Labour Engagement = 0 वाली पंचायतें</h3>
             <div class="zero-list" id="zeroList"></div>
         </div>
 
-        <!-- Search -->
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="🔍 पंचायत का नाम खोजें...">
             <select id="enggFilter">
-                <option value="">सभी उपयंत्री</option>
+                <option value="">सभी उपयंत्री / रेंज</option>
             </select>
         </div>
 
-        <!-- Engineer Wise Groups -->
         <div id="enggGroups"></div>
 
     </div>
@@ -225,103 +221,149 @@
 <footer>Auto-generated Dashboard | Data Source: GitHub Repository</footer>
 
 <script>
-// =========================================================
-// ⚠️ यहाँ अपनी GitHub RAW JSON फाइल का URL डालें
-// Format: https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/data.json
-// =========================================================
-const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/refs/heads/main/data.json";
+const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/main/data.json";
 
-let rawData = [];
-let headers = [];
-let COL = {}; // column index mapping
+let rawData = [];      // flat records: {range, engg, panchayat, labour}
+let groupTotals = {};  // range -> total labour (from Total row)
+let groupDysfunctional = {}; // range -> dysfunctional count
 
-fetch(DATA_URL + "?t=" + new Date().getTime()) // cache बस्टिंग
+fetch(DATA_URL + "?t=" + new Date().getTime())
     .then(res => res.json())
-    .then(json => {
-        processData(json);
-    })
+    .then(json => processData(json))
     .catch(err => {
-        document.getElementById('loadingMsg').innerHTML =
-            "❌ डेटा लोड करने में त्रुटि: " + err + "<br>कृपया DATA_URL चेक करें।";
+        showError("❌ डेटा लोड करने में त्रुटि: " + err);
     });
 
+function showError(msg) {
+    document.getElementById('loadingMsg').style.display = 'block';
+    document.getElementById('loadingMsg').innerText = msg;
+    document.getElementById('dashboardContent').style.display = 'none';
+}
+
 function processData(json) {
-    if (!json || json.length === 0) {
-        document.getElementById('loadingMsg').innerText = "डेटा उपलब्ध नहीं है।";
+    console.log("📦 पूरा JSON:", json);
+
+    if (!json || json.length < 6) {
+        showError("डेटा पर्याप्त नहीं है।");
         return;
     }
 
-    headers = json[0];
+    // ---- Header row ढूंढें जहाँ "PANCHYAT" शब्द हो ----
+    let headerRowIndex = -1;
+    for (let i = 0; i < json.length; i++) {
+        if (json[i].some(cell => (cell || "").toString().trim().toUpperCase() === "PANCHYAT")) {
+            headerRowIndex = i;
+            break;
+        }
+    }
 
-    // Column index मैपिंग (header नाम के हिसाब से, ताकि क्रम बदलने पर भी काम करे)
-    COL.sno = headers.indexOf("SNo.");
-    COL.panchayat = headers.indexOf("Panchayats");
-    COL.totalGP = headers.indexOf("Total No. of Gram Panchayats (GPs)");
-    COL.gpWithWorks = findCol("No. of Gram Panchayats");
-    COL.maxExpected = findCol("Maximum Expected Unskilled Labour");
-    COL.ongoingMR = findCol("No. of Ongoing Works");
-    COL.workersNoKYC = findCol("Workers without");
-    COL.musterRolls = findCol("No. of Muster Rolls");
-    COL.engg = headers.indexOf("ENGG_NAME");
+    if (headerRowIndex === -1) {
+        showError("⚠️ 'PANCHYAT' हेडर नहीं मिला। डेटा फॉर्मेट जांचें।");
+        return;
+    }
 
-    // डेटा rows को साफ करना - Total row, #N/A, header duplicate rows हटाना
-    rawData = json.slice(1).filter(row => {
-        let panchayatName = (row[COL.panchayat] || "").toString().trim();
-        let enggName = (row[COL.engg] || "").toString().trim();
-        if (panchayatName === "" || panchayatName.toLowerCase() === "total") return false;
-        if (enggName === "#N/A" || enggName === "") return false;
-        if (!isNaN(panchayatName) && panchayatName.length < 3) return false; // junk numeric row हटाना
-        return true;
-    });
+    let rangeRow = json[headerRowIndex - 2] || [];
+    let enggRow  = json[headerRowIndex - 1] || [];
+    let headerRow = json[headerRowIndex];
 
-    renderDashboard();
+    console.log("रेंज row:", rangeRow, "उपयंत्री row:", enggRow);
+
+    // ---- हर ग्रुप (Range) की column position पहचानें ----
+    let groups = [];
+    for (let c = 0; c < headerRow.length; c++) {
+        if ((headerRow[c] || "").toString().trim().toUpperCase() === "PANCHYAT") {
+            let rangeName = (rangeRow[c] || "").toString().trim();
+            if (rangeName.toUpperCase() === "TOTAL" || rangeName === "") continue;
+            groups.push({
+                panchayatCol: c,
+                labourCol: c + 1,
+                rangeName: rangeName,
+                enggName: (enggRow[c] || "अज्ञात").toString().trim()
+            });
+        }
+    }
+
+    console.log("🔗 Groups मिले:", groups);
+
+    if (groups.length === 0) {
+        showError("⚠️ कोई भी Group/Range नहीं मिला। Console चेक करें।");
+        return;
+    }
+
+    // ---- डेटा rows पढ़ें (Total और DYSFUNCTIONAL row तक) ----
+    rawData = [];
+    for (let i = headerRowIndex + 1; i < json.length; i++) {
+        let row = json[i];
+        let firstCellVal = (row[groups[0].panchayatCol] || "").toString().trim();
+
+        if (firstCellVal.toLowerCase() === "total") {
+            groups.forEach(g => {
+                groupTotals[g.rangeName] = parseFloat(row[g.labourCol]) || 0;
+            });
+            continue;
+        }
+        if (firstCellVal.toUpperCase() === "DYSFUNCTIONAL") {
+            groups.forEach(g => {
+                groupDysfunctional[g.rangeName] = parseFloat(row[g.labourCol]) || 0;
+            });
+            continue;
+        }
+
+        // इस row में हर group से panchayat + labour निकालें
+        groups.forEach(g => {
+            let panchayat = (row[g.panchayatCol] || "").toString().trim();
+            if (panchayat === "") return; // खाली सेल छोड़ें
+            let labour = parseFloat(row[g.labourCol]);
+            if (isNaN(labour)) labour = 0;
+            rawData.push({
+                range: g.rangeName,
+                engg: g.enggName,
+                panchayat: panchayat,
+                labour: labour
+            });
+        });
+    }
+
+    console.log("✅ Flat rawData:", rawData);
+    console.log("📊 Group Totals:", groupTotals);
+    console.log("⚠️ Dysfunctional:", groupDysfunctional);
+
+    if (rawData.length === 0) {
+        showError("⚠️ कोई डेटा row नहीं मिली। Console चेक करें।");
+        return;
+    }
+
+    renderDashboard(groups);
 }
 
-function findCol(partial) {
-    return headers.findIndex(h => h && h.toString().includes(partial));
-}
-
-function toNum(val) {
-    let n = parseFloat(val);
-    return isNaN(n) ? 0 : n;
-}
-
-function renderDashboard() {
+function renderDashboard(groups) {
     document.getElementById('loadingMsg').style.display = 'none';
     document.getElementById('dashboardContent').style.display = 'block';
     document.getElementById('lastUpdated').innerText =
         "अंतिम अपडेट: " + new Date().toLocaleString('hi-IN');
 
-    // ---------- Summary Totals ----------
+    // ---------- Summary ----------
     let totalPanchayats = rawData.length;
-    let totalGP = sumCol(COL.totalGP);
-    let totalGPWithWorks = sumCol(COL.gpWithWorks);
-    let totalMaxExpected = sumCol(COL.maxExpected);
-    let totalOngoingMR = sumCol(COL.ongoingMR);
-    let totalNoKYC = sumCol(COL.workersNoKYC);
-    let totalMR = sumCol(COL.musterRolls);
-    let zeroCount = rawData.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+    let totalLabour = rawData.reduce((s, r) => s + r.labour, 0);
+    let zeroCount = rawData.filter(r => r.labour === 0).length;
+    let totalDysfunctional = Object.values(groupDysfunctional).reduce((s, v) => s + v, 0);
 
     document.getElementById('summaryCards').innerHTML = `
         <div class="card"><h3>${totalPanchayats}</h3><p>कुल पंचायतें</p></div>
-        <div class="card"><h3>${totalGP}</h3><p>Total GPs</p></div>
-        <div class="card"><h3>${totalGPWithWorks}</h3><p>GPs with Works in Progress</p></div>
-        <div class="card"><h3>${totalMaxExpected}</h3><p>Max Expected Labour Engagement</p></div>
-        <div class="card"><h3>${totalOngoingMR}</h3><p>Ongoing Works with MRs</p></div>
-        <div class="card"><h3>${totalNoKYC}</h3><p>Workers without e-KYC</p></div>
-        <div class="card"><h3>${totalMR}</h3><p>Total Muster Rolls</p></div>
+        <div class="card"><h3>${groups.length}</h3><p>कुल रेंज/उपयंत्री</p></div>
+        <div class="card"><h3>${totalLabour}</h3><p>कुल Expected Labour Engagement</p></div>
+        <div class="card"><h3>${totalDysfunctional}</h3><p>कुल Dysfunctional पंचायतें</p></div>
         <div class="card alert"><h3>${zeroCount}</h3><p>⚠️ Zero Engagement पंचायतें</p></div>
     `;
 
     // ---------- Group by Engineer ----------
     let enggMap = {};
-    rawData.forEach(row => {
-        let engg = row[COL.engg] || "अज्ञात";
-        if (!enggMap[engg]) enggMap[engg] = [];
-        enggMap[engg].push(row);
+    rawData.forEach(r => {
+        let key = r.engg + " (" + r.range + ")";
+        if (!enggMap[key]) enggMap[key] = [];
+        enggMap[key].push(r);
     });
 
-    // Engineer dropdown भरना
     let enggFilter = document.getElementById('enggFilter');
     Object.keys(enggMap).forEach(e => {
         let opt = document.createElement('option');
@@ -329,42 +371,40 @@ function renderDashboard() {
         enggFilter.appendChild(opt);
     });
 
-    // ---------- Zero Engagement List ----------
+    // ---------- Zero List ----------
     let zeroList = document.getElementById('zeroList');
-    let zeroRows = rawData.filter(r => toNum(r[COL.maxExpected]) === 0);
+    let zeroRows = rawData.filter(r => r.labour === 0);
     if (zeroRows.length === 0) {
         zeroList.innerHTML = "<p style='color:green;'>✅ कोई भी पंचायत Zero Engagement में नहीं है।</p>";
     } else {
         zeroList.innerHTML = zeroRows.map(r =>
-            `<span class="zero-tag">${r[COL.panchayat]} (${r[COL.engg]})</span>`
+            `<span class="zero-tag">${r.panchayat} (${r.engg})</span>`
         ).join('');
     }
 
     // ---------- Charts ----------
-    renderCharts(enggMap);
+    renderCharts(groups);
 
-    // ---------- Engineer Wise Table Groups ----------
+    // ---------- Table Groups ----------
     renderEnggGroups(enggMap);
 
-    // ---------- Search & Filter ----------
+    // ---------- Filters ----------
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('enggFilter').addEventListener('change', applyFilters);
 }
 
-function sumCol(colIndex) {
-    return rawData.reduce((sum, row) => sum + toNum(row[colIndex]), 0);
-}
-
-function renderCharts(enggMap) {
-    let labels = Object.keys(enggMap);
-    let data = labels.map(e => enggMap[e].reduce((s, r) => s + toNum(r[COL.maxExpected]), 0));
+function renderCharts(groups) {
+    let labels = groups.map(g => g.rangeName + "\n(" + g.enggName + ")");
+    let data = groups.map(g => groupTotals[g.rangeName] !== undefined
+        ? groupTotals[g.rangeName]
+        : rawData.filter(r => r.range === g.rangeName).reduce((s, r) => s + r.labour, 0));
 
     new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: groups.map(g => g.rangeName),
             datasets: [{
-                label: 'Max Expected Labour Engagement',
+                label: 'कुल Expected Labour',
                 data: data,
                 backgroundColor: '#2e8b57'
             }]
@@ -376,7 +416,7 @@ function renderCharts(enggMap) {
         }
     });
 
-    let zeroCount = rawData.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+    let zeroCount = rawData.filter(r => r.labour === 0).length;
     let nonZeroCount = rawData.length - zeroCount;
 
     new Chart(document.getElementById('pieChart'), {
@@ -396,42 +436,31 @@ function renderEnggGroups(enggMap) {
     let container = document.getElementById('enggGroups');
     container.innerHTML = '';
 
-    Object.keys(enggMap).forEach((engg, idx) => {
-        let rows = enggMap[engg];
-        let zeroInGroup = rows.filter(r => toNum(r[COL.maxExpected]) === 0).length;
+    Object.keys(enggMap).forEach((key, idx) => {
+        let rows = enggMap[key];
+        let zeroInGroup = rows.filter(r => r.labour === 0).length;
+        let totalLabourInGroup = rows.reduce((s, r) => s + r.labour, 0);
 
         let groupDiv = document.createElement('div');
         groupDiv.className = 'engg-group';
-        groupDiv.setAttribute('data-engg', engg);
+        groupDiv.setAttribute('data-engg', key);
 
-        let tableRows = rows.map(row => {
-            let isZero = toNum(row[COL.maxExpected]) === 0;
-            return `<tr class="${isZero ? 'zero-row' : ''}" data-panchayat="${(row[COL.panchayat]||'').toLowerCase()}">
-                <td>${row[COL.sno] || ''}</td>
-                <td class="panchayat-name">${row[COL.panchayat] || ''}</td>
-                <td>${row[COL.totalGP] || 0}</td>
-                <td>${row[COL.gpWithWorks] || 0}</td>
-                <td>${row[COL.maxExpected] || 0}</td>
-                <td>${row[COL.ongoingMR] || 0}</td>
-                <td>${row[COL.workersNoKYC] || 0}</td>
-                <td>${row[COL.musterRolls] || 0}</td>
+        let tableRows = rows.map(r => {
+            let isZero = r.labour === 0;
+            return `<tr class="${isZero ? 'zero-row' : ''}" data-panchayat="${r.panchayat.toLowerCase()}">
+                <td class="panchayat-name">${r.panchayat}</td>
+                <td>${r.labour}</td>
             </tr>`;
         }).join('');
 
         groupDiv.innerHTML = `
             <div class="engg-header" onclick="toggleGroup(${idx})">
-                <span>👷 उपयंत्री: ${engg} (कुल पंचायतें: ${rows.length})</span>
-                <span class="badge">${zeroInGroup} Zero</span>
+                <span>👷 ${key} | कुल पंचायतें: ${rows.length} | कुल Labour: ${totalLabourInGroup}</span>
+                <span class="badge zero-badge">${zeroInGroup} Zero</span>
             </div>
             <div class="engg-body" id="group-${idx}">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>SNo.</th><th>पंचायत</th><th>Total GPs</th>
-                            <th>GPs with Works</th><th>Max Expected Labour</th>
-                            <th>Ongoing Works(MR)</th><th>No e-KYC</th><th>Muster Rolls</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>पंचायत</th><th>Expected Labour Engagement</th></tr></thead>
                     <tbody>${tableRows}</tbody>
                 </table>
             </div>
@@ -439,7 +468,6 @@ function renderEnggGroups(enggMap) {
         container.appendChild(groupDiv);
     });
 
-    // पहला group by-default खुला रखें
     if (Object.keys(enggMap).length > 0) toggleGroup(0);
 }
 
@@ -453,8 +481,8 @@ function applyFilters() {
     let enggVal = document.getElementById('enggFilter').value;
 
     document.querySelectorAll('.engg-group').forEach(group => {
-        let groupEngg = group.getAttribute('data-engg');
-        let showGroup = !enggVal || groupEngg === enggVal;
+        let groupKey = group.getAttribute('data-engg');
+        let showGroup = !enggVal || groupKey === enggVal;
 
         let anyRowVisible = false;
         group.querySelectorAll('tbody tr').forEach(row => {
@@ -474,3 +502,30 @@ function applyFilters() {
 
 </body>
 </html>
+```
+
+---
+
+## 📝 इस्तेमाल करने के स्टेप्स
+
+1. पुरानी `dashboard.html` को पूरी तरह हटा कर ऊपर वाला नया कोड पेस्ट करें
+2. GitHub पर अपलोड (Commit changes) करें
+3. Dashboard पेज को **Hard Refresh** करें: `Ctrl + Shift + R`
+4. **F12 → Console** खोल कर चेक करें — अब वहां आपको दिखेगा:
+   - `🔗 Groups मिले:` — 5 groups (KANHWARA, PAHARI, CHAKA, JUHLA, PIPRODH) दिखने चाहिए
+   - `✅ Flat rawData:` — सभी पंचायतों की लिस्ट labour value के साथ
+
+---
+
+## 🎯 अब Dashboard में क्या दिखेगा
+
+| Feature | विवरण |
+|---|---|
+| Summary Cards | कुल पंचायतें, कुल रेंज, कुल Labour, Dysfunctional, Zero count |
+| Bar Chart | हर Range (KANHWARA, PAHARI, आदि) का कुल Expected Labour |
+| Pie Chart | Zero vs Non-Zero पंचायतों का अनुपात |
+| Zero Alert List | जैसे: DIDHWARA (Mukesh), PILOJI (Mukesh), KHMTRA (Mukesh) आदि |
+| उपयंत्री-वार Table | हर उपयंत्री के नीचे उसकी पंचायतें + Labour value, Zero वाली लाल हाईलाइट |
+| Search + Filter | पंचायत नाम खोजें या उपयंत्री/रेंज से filter करें |
+
+यह अब आपके **असली डेटा structure** के हिसाब से सही काम करेगा। कोड लगाने के बाद अगर फिर भी कोई समस्या आए, तो Console (F12) में दिख रहे Log का स्क्रीनशॉट भेज दें, मैं तुरंत ठीक कर दूंगा।
