@@ -1,57 +1,33 @@
-import urllib.request
-import re
-
-url = "https://dord.gov.in"
-
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-req = urllib.request.Request(url, headers=headers)
-
-try:
-    with urllib.request.urlopen(req) as response:
-        html = response.read().decode('utf-8')
-        
-    table_match = re.search(r'<table[^>]*>([\s\S]*?)<\/table>', html, re.IGNORECASE)
+# पुरानी पाइथन को हटाकर सीधे जावास्क्रिप्ट आधारित लोडर पेज बनाना
+styled_html = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>VB-GRAM G LIVE DATA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
+        #loading { font-size: 18px; color: #666; margin-top: 50px; font-weight: bold; }
+        iframe { width: 100%; height: 90vh; border: none; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="loading">सरकारी पोर्टल से लाइव डेटा सुरक्षित रूप से कनेक्ट किया जा रहा है, कृपया प्रतीक्षा करें...</div>
     
-    if table_match:
-        table_content = table_match.group(1)
-        
-        # आपकी इमेज जैसा डिज़ाइन देने के लिए CSS स्टाइलिंग जोड़ना
-        styled_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="refresh" content="300">
-            <style>
-                body {{ font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }}
-                table {{ margin: 20px auto; border-collapse: collapse; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }}
-                tr:nth-child(1) {{ background-color: #000000 !important; color: #ffffff; font-size: 16px; font-weight: bold; }}
-                tr:nth-child(2), tr:nth-child(3) {{ font-weight: bold; background: #ffffff; }}
-                tr:nth-child(6) {{ background-color: #f3f3f3; font-weight: bold; }}
-                td, th {{ border: 1px solid #cccccc; padding: 8px 12px; text-align: center; }}
-                tr {{ background-color: #ffffff; }}
-                /* Total और Dysfunctional लाइनों को रंगना */
-                tr:has(td:first-child:contains("Total")), tr:has(td:first-child:contains("TOTAL")) {{ background-color: #cfe2f3 !important; font-weight: bold; }}
-                tr:has(td:first-child:contains("DYSFUNCTIONAL")), tr:has(td:first-child:contains("Dysfunctional")) {{ background-color: #9fc5e8 !important; font-weight: bold; }}
-            </style>
-            <script>
-                // पुराने ब्राउज़रों में रंग सेट करने के लिए जावास्क्रिप्ट सपोर्ट
-                window.onload = function() {{
-                    var rows = document.getElementsByTagName("tr");
-                    for(var i=0; i<rows.length; i++) {{
-                        var firstCell = rows[i].cells[0] ? rows[i].cells[0].innerText.toUpperCase() : "";
-                        if(firstCell.indexOf("TOTAL") !== -1) rows[i].style.backgroundColor = "#cfe2f3";
-                        if(firstCell.indexOf("DYSFUNCTIONAL") !== -1) rows[i].style.backgroundColor = "#9fc5e8";
-                    }}
-                }}
-            </script>
-        </head>
-        <body>
-            <table>{table_content}</table>
-        </body>
-        </html>
-        """
-        with open("index.html", "w", encoding="utf-8") as f:
-            f.write(styled_html)
-            
-except Exception as e:
-    print("Error:", e)
+    <!-- यह लाइन सीधे आपके ब्राउज़र का उपयोग करके लाइव पेज को आपके सामने लोड कर देगी -->
+    <iframe id="dataFrame" src="https://dord.gov.in" onload="document.getElementById('loading').style.display='none';"></iframe>
+
+    <script>
+        // हर 5 मिनट में डेटा को अपने आप रिफ्रेश करने के लिए
+        setInterval(function() {
+            document.getElementById('dataFrame').src = document.getElementById('dataFrame').src;
+        }, 300000);
+    </script>
+</body>
+</html>
+"""
+
+# हमेशा एक index.html फाइल बनाकर रखेगा ताकि गिटहब एरर न दे
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(styled_html)
+print("Loader index.html successfully created!")
