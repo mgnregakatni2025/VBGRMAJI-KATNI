@@ -1,26 +1,45 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
     <meta charset="utf-8">
-    <title>VB-GRAM G LIVE DATA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <title>VB-GRAM G LIVE REPORT</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        #loading { font-size: 18px; color: #666; margin-top: 50px; font-weight: bold; }
-        iframe { width: 100%; height: 90vh; border: none; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        /* पूरी स्क्रीन को व्यवस्थित करने के लिए सीएसएस */
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: Arial, sans-serif;
+        }
+        .wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: top;
+            padding-top: 10px;
+        }
+        /* एक्सेल फ्रेम को फुल स्क्रीन और रिस्पॉन्सिव बनाना */
+        iframe {
+            width: 98% !important;
+            height: 95vh !important;
+            border: 2px solid #cbd5e1 !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
     </style>
 </head>
 <body>
-    <div id="loading">सरकारी पोर्टल से लाइव डेटा सुरक्षित रूप से कनेक्ट किया जा रहा है, कृपया प्रतीक्षा करें...</div>
-    
-    <!-- यह लाइन सीधे आपके ब्राउज़र का उपयोग करके लाइव पेज को आपके सामने लोड कर देगी -->
-    <iframe id="dataFrame" src="https://dord.gov.in" onload="document.getElementById('loading').style.display='none';"></iframe>
 
-    <script>
-        // हर 5 मिनट में डेटा को अपने आप रिफ्रेश करने के लिए
-        setInterval(function() {
-            document.getElementById('dataFrame').src = document.getElementById('dataFrame').src;
-        }, 300000);
-    </script>
+    <div class="wrapper">
+       <iframe width="402" height="346" frameborder="0" scrolling="no" src="https://1drv.ms/x/c/7E0D01842E60B248/IQSL1OgrEHIMSq9IZpBY3imPAVlB2LCB2tn0hArEe2COe8Y?em=2&wdAllowInteractivity=False&wdHideGridlines=True&wdHideHeaders=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edaebf=rslc0"></iframe>
+        
+    </div>
+
 </body>
 </html>
