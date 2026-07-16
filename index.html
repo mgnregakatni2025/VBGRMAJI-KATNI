@@ -216,7 +216,7 @@
     </div>
 </div>
 
-<footer>Auto-generated Dashboard | Data Source: GitHub Repository</footer>
+<footer>Auto-generated Dashboard | Data Source: Janpad Panchyat Katni</footer>
 
 <!-- Modal Popup -->
 <div class="modal-overlay" id="modalOverlay">
@@ -320,7 +320,6 @@ function renderDashboard() {
     let totalMR = rawData.reduce((s, r) => s + r.musterRolls, 0);
 
     document.getElementById('summaryCards').innerHTML = `
-        <div class="card"><h3>${totalPanchayats}</h3><p>कुल पंचायतें</p></div>
         <div class="card"><h3>${totalGP}</h3><p>Total GPs</p></div>
 
         <div class="card blue clickable" onclick="openListModal('progress')">
