@@ -291,7 +291,6 @@ function processData(json) {
         gpWithWorks: toNum(row[COL.gpWithWorks]),
         maxExpected: toNum(row[COL.maxExpected]),
         ongoingMR: toNum(row[COL.ongoingMR]),
-        workersNoKYC: toNum(row[COL.workersNoKYC]),
         musterRolls: toNum(row[COL.musterRolls]),
         engg: (row[COL.engg] || "अज्ञात").toString().trim(),
         sector: (row[COL.sector] || "अज्ञात").toString().trim()
@@ -315,7 +314,6 @@ function renderDashboard() {
     let dysfunctionalList = rawData.filter(r => r.gpWithWorks === 0);
     let totalMaxExpected = rawData.reduce((s, r) => s + r.maxExpected, 0);
     let totalOngoingMR = rawData.reduce((s, r) => s + r.ongoingMR, 0);
-    let totalNoKYC = rawData.reduce((s, r) => s + r.workersNoKYC, 0);
     let totalMR = rawData.reduce((s, r) => s + r.musterRolls, 0);
 
     document.getElementById('summaryCards').innerHTML = `
@@ -335,7 +333,6 @@ function renderDashboard() {
 
         <div class="card"><h3>${totalMaxExpected}</h3><p>Max Expected Labour Engagement</p></div>
         <div class="card"><h3>${totalOngoingMR}</h3><p>Ongoing Works with MRs</p></div>
-        <div class="card"><h3>${totalNoKYC}</h3><p>Workers without e-KYC</p></div>
         <div class="card"><h3>${totalMR}</h3><p>Total Muster Rolls</p></div>
     `;
 
@@ -415,7 +412,6 @@ function renderEnggGroups() {
                 <td>${r.gpWithWorks > 0 ? '✅ चालू' : '⚠️ बंद'}</td>
                 <td>${r.maxExpected}</td>
                 <td>${r.ongoingMR}</td>
-                <td>${r.workersNoKYC}</td>
                 <td>${r.musterRolls}</td>
             </tr>`;
         }).join('');
