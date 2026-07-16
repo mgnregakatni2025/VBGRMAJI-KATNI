@@ -5,119 +5,209 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>विकासखण्ड‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
  :root{
-  --blue:#1a73e8; --green:#34a853; --red:#ea4335; --yellow:#fbbc04; --teal:#00897b;
-  --ink:#202124; --muted:#5f6368; --line:#dadce0; --bg:#f8f9fa; --card:#ffffff;
-  --shadow:0 1px 2px 0 rgba(60,64,67,.30),0 1px 3px 1px rgba(60,64,67,.15);
+  --pri:#0d47a1; --pri-l:#1565c0; --pri-ll:#e3f2fd;
+  --grn:#2e7d32; --grn-l:#e8f5e9;
+  --red:#c62828; --red-l:#ffebee;
+  --amb:#f57f17; --amb-l:#fff8e1;
+  --tl:#00695c; --tl-l:#e0f2f1;
+  --ink:#1a1a2e; --muted:#6b7280; --line:#e5e7eb;
+  --bg:#f0f2f5; --card:#ffffff;
+  --sh1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 12px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+  --sh3:0 10px 30px rgba(0,0,0,.10),0 4px 8px rgba(0,0,0,.05);
+  --r1:10px; --r2:8px;
  }
- *{box-sizing:border-box}
- body{margin:0;font-family:"Roboto","Noto Sans Devanagari",system-ui,Arial,sans-serif;
-  background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
- .gbar{height:4px;background:linear-gradient(90deg,var(--blue) 0 25%,var(--red) 25% 50%,var(--yellow) 50% 75%,var(--green) 75% 100%)}
- header.appbar{background:var(--card);box-shadow:var(--shadow);padding:14px clamp(12px,4vw,28px);position:sticky;top:0;z-index:50}
- .appbar .row{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
- .appbar h1{margin:0;font-size:clamp(14px,3.6vw,20px);font-weight:700;color:var(--ink);line-height:1.3}
- .appbar .sub{font-size:clamp(11px,2.6vw,13px);color:var(--muted);margin-top:2px;font-weight:500}
- .updchip{background:#e8f0fe;color:#1967d2;font-size:11.5px;font-weight:500;padding:6px 12px;border-radius:16px;white-space:nowrap}
- .wrap{max-width:1280px;margin:0 auto;padding:clamp(12px,3vw,22px)}
- #loadNote{text-align:center;font-size:12.5px;color:var(--muted);margin:0 0 14px}
- .kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px}
- .kpi{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px;border-left:4px solid var(--blue)}
- .kpi .v{font-size:clamp(20px,5.5vw,28px);font-weight:700;line-height:1;color:var(--ink)}
- .kpi .l{font-size:11.5px;color:var(--muted);margin-top:7px;font-weight:500}
- .kpi.green{border-left-color:var(--green)} .kpi.red{border-left-color:var(--red)}
- .kpi.yellow{border-left-color:var(--yellow)} .kpi.teal{border-left-color:var(--teal)}
- .stitle{font-size:clamp(15px,3.4vw,18px);font-weight:700;margin:24px 2px 12px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
- .stitle .ic{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+ *{box-sizing:border-box;margin:0;padding:0}
+ html{scroll-behavior:smooth}
+ body{font-family:"Roboto","Noto Sans Devanagari",system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+ /* ===== एनिमेटेड ग्रेडिएंट बार ===== */
+ .gbar{height:5px;background:linear-gradient(90deg,var(--pri),var(--red),var(--amb),var(--grn),var(--pri));
+  background-size:300% 100%;animation:gSlide 6s linear infinite}
+ @keyframes gSlide{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+ /* ===== हेडर ===== */
+ header.appbar{background:linear-gradient(135deg,#0d47a1 0%,#1565c0 50%,#0277bd 100%);
+  box-shadow:var(--sh3);padding:0;position:sticky;top:0;z-index:50}
+ .appbar .row{max-width:1320px;margin:0 auto;padding:16px clamp(14px,4vw,32px);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+ .appbar h1{font-size:clamp(13px,3.2vw,18px);font-weight:700;color:#fff;line-height:1.35;letter-spacing:.2px}
+ .appbar .sub{font-size:clamp(10.5px,2.4vw,12.5px);color:rgba(255,255,255,.7);margin-top:3px;font-weight:400;letter-spacing:.3px}
+ .updchip{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:#fff;font-size:11px;font-weight:500;padding:6px 14px;border-radius:20px;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.2);letter-spacing:.2px}
+
+ .wrap{max-width:1320px;margin:0 auto;padding:clamp(14px,3vw,24px)}
+ #loadNote{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:500}
+
+ /* ===== KPI कार्ड ===== */
+ .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin-bottom:24px}
+ .kpi{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:18px 18px 16px;
+  position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid rgba(0,0,0,.04)}
+ .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+ .kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+ .kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--pri),var(--pri-l))}
+ .kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--grn),#43a047)}
+ .kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--red),#e53935)}
+ .kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--amb),#f9a825)}
+ .kpi:nth-child(5)::before{background:linear-gradient(90deg,var(--tl),#00897b)}
+ .kpi:nth-child(6)::before{background:linear-gradient(90deg,#5c6bc0,#7986cb)}
+ .kpi:nth-child(n+7)::before{background:linear-gradient(90deg,var(--muted),#9e9e9e)}
+ .kpi .v{font-size:clamp(22px,5vw,30px);font-weight:900;line-height:1.1;
+  background:linear-gradient(135deg,var(--ink),#37474f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text}
+ .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+ /* ===== सेक्शन शीर्षक ===== */
+ .stitle{font-size:clamp(14px,3.2vw,17px);font-weight:700;margin:28px 0 14px;color:var(--ink);
+  display:flex;align-items:center;gap:10px}
+ .stitle .ic{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;box-shadow:0 2px 6px rgba(13,71,161,.3)}
+ .stitle .line{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+ /* ===== टूलबार ===== */
  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
- .toolbar input{flex:1 1 200px;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
- .toolbar input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,115,232,.2)}
- .gbtn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:500;font-size:13px;padding:8px 14px;border-radius:8px;font-family:inherit}
- .gbtn:hover{background:#f1f3f4}
+ .toolbar input{flex:1 1 200px;min-width:160px;padding:10px 14px 10px 38px;border:1.5px solid var(--line);
+  border-radius:var(--r2);font-size:13.5px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239e9e9e'%3E%3Cpath d='M11.7 10.3l2.6 2.6-1.4 1.4-2.6-2.6A5.5 5.5 0 116.5 1a5.5 5.5 0 015.2 9.3zM6.5 10a4 4 0 100-8 4 4 0 000 8z'/%3E%3C/svg%3E") 14px center no-repeat;
+  transition:border-color .2s,box-shadow .2s}
+ .toolbar input:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(13,71,161,.12)}
+ .gbtn{cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:var(--pri);
+  font-weight:600;font-size:12.5px;padding:9px 16px;border-radius:var(--r2);font-family:inherit;
+  transition:all .15s;letter-spacing:.2px}
+ .gbtn:hover{background:var(--pri-ll);border-color:var(--pri-l)}
+ .gbtn.primary{background:var(--pri);color:#fff;border-color:var(--pri)}
+ .gbtn.primary:hover{background:var(--pri-l)}
+
+ /* ===== चार्ट ===== */
  .charts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-bottom:8px}
- .chart-card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:12px 14px}
- .chart-card h4{margin:0 0 6px;font-size:12.5px;color:var(--muted);font-weight:500}
+ .chart-card{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:14px 16px;border:1px solid rgba(0,0,0,.04)}
+ .chart-card h4{margin:0 0 6px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
  .chart-card .ch{position:relative;height:190px}
 
- /* फ़िल्टर बार */
- #filterBar{display:none;background:#e8f0fe;border:1px solid #aecbfa;border-radius:8px;padding:10px 16px;margin-bottom:14px;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--blue)}
+ /* ===== फ़िल्टर बार ===== */
+ #filterBar{display:none;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border:1px solid #90caf9;
+  border-radius:var(--r2);padding:10px 16px;margin-bottom:14px;align-items:center;gap:10px;
+  font-size:12.5px;font-weight:600;color:var(--pri);letter-spacing:.2px}
  #filterBar.show{display:flex}
- #filterBar .clear-btn{cursor:pointer;background:var(--red);color:#fff;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-family:inherit;font-weight:500}
- #filterBar .clear-btn:hover{background:#d93025}
+ #filterBar .clear-btn{cursor:pointer;background:var(--red);color:#fff;border:none;padding:5px 14px;
+  border-radius:6px;font-size:11.5px;font-family:inherit;font-weight:600;transition:background .15s}
+ #filterBar .clear-btn:hover{background:#b71c1c}
 
- /* फ़िल्टर चिप्स */
+ /* ===== मेट्रिक चिप्स ===== */
+ .m{font-size:11px;background:#f3f4f6;border-radius:6px;padding:4px 10px;color:var(--muted);white-space:nowrap;
+  font-weight:500;letter-spacing:.1px;border:1px solid transparent;transition:all .12s}
+ .m b{color:var(--ink);font-weight:700}
+ .m.warn{background:var(--red-l);color:var(--red);border-color:rgba(198,40,40,.12)} .m.warn b{color:var(--red)}
+ .m.ok{background:var(--grn-l);color:var(--grn);border-color:rgba(46,125,50,.12)} .m.ok b{color:var(--grn)}
+ .m.blue{background:var(--pri-ll);color:var(--pri);border-color:rgba(13,71,161,.12)} .m.blue b{color:var(--pri)}
  .filter-chip{cursor:pointer;transition:transform .12s,box-shadow .12s;user-select:none}
- .filter-chip:hover{transform:scale(1.05);box-shadow:0 1px 4px rgba(0,0,0,.18)}
- .filter-chip.active{outline:2px solid currentColor;outline-offset:1px}
+ .filter-chip:hover{transform:scale(1.06);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+ .filter-chip.active{outline:2.5px solid currentColor;outline-offset:1px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 
  /* ===== स्तर 1: विकासखण्ड ===== */
- .block{background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
- .block-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s}
- .block-head:hover{background:#f8f9fa}
- .block.open .block-head{background:#e8f0fe}
+ .block{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);margin-bottom:12px;
+  overflow:hidden;border:1px solid rgba(0,0,0,.04);transition:box-shadow .2s}
+ .block:hover{box-shadow:var(--sh2)}
+ .block-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none;
+  transition:background .15s;border-left:4px solid transparent}
+ .block-head:hover{background:rgba(13,71,161,.02)}
+ .block.open .block-head{background:linear-gradient(90deg,rgba(13,71,161,.06),rgba(13,71,161,.02));
+  border-left-color:var(--pri)}
  .blk-name{font-weight:700;font-size:15px;color:var(--ink);min-width:120px;display:flex;align-items:center;gap:8px}
- .chev{transition:transform .2s;color:var(--muted);font-size:13px;flex-shrink:0}
- .block.open>.block-head .chev{transform:rotate(90deg);color:var(--blue)}
- .blk-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
- .block-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
- .block.open>.block-body{display:block}
+ .chev{transition:transform .25s cubic-bezier(.4,0,.2,1);color:var(--muted);font-size:11px;flex-shrink:0;
+  width:18px;height:18px;border-radius:4px;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center}
+ .block.open>.block-head .chev{transform:rotate(90deg);color:#fff;background:var(--pri)}
+ .blk-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+ .block-body{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
+ .block.open>.block-body{display:block;animation:fadeSlide .25s ease}
+ @keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
  /* ===== स्तर 2: उपयंत्री ===== */
- .eng-row{border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden;background:#fff}
- .eng-row-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .12s}
- .eng-row-head:hover{background:#f8f9fa}
- .eng-row.open>.eng-row-head{background:#e8f0fe}
- .eng-row .chev{font-size:12px}
- .eng-row.open>.eng-row-head .chev{transform:rotate(90deg);color:var(--blue)}
- .eng-row-name{font-weight:700;font-size:14px;color:var(--blue);min-width:100px;display:flex;align-items:center;gap:6px}
- .eng-row-sec{font-size:11.5px;color:var(--muted);margin-left:2px}
- .eng-row-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+ .eng-row{border:1.5px solid var(--line);border-radius:var(--r2);margin-top:12px;overflow:hidden;
+  background:#fff;transition:border-color .2s,box-shadow .2s}
+ .eng-row:hover{border-color:#90caf9;box-shadow:0 2px 8px rgba(13,71,161,.06)}
+ .eng-row-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none;
+  transition:background .15s;border-left:3px solid transparent}
+ .eng-row-head:hover{background:rgba(13,71,161,.02)}
+ .eng-row.open>.eng-row-head{background:linear-gradient(90deg,rgba(13,71,161,.05),transparent);
+  border-left-color:var(--pri-l)}
+ .eng-row .chev{font-size:10px;width:16px;height:16px;border-radius:3px}
+ .eng-row.open>.eng-row-head .chev{transform:rotate(90deg);color:#fff;background:var(--pri-l)}
+ .eng-row-name{font-weight:700;font-size:13.5px;color:var(--pri);min-width:100px;display:flex;align-items:center;gap:6px}
+ .eng-row-sec{font-size:11px;color:var(--muted);margin-left:2px;font-weight:500}
+ .eng-row-metrics{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
  .eng-row-body{display:none;border-top:1px solid var(--line);padding:0 10px 10px}
- .eng-row.open>.eng-row-body{display:block}
+ .eng-row.open>.eng-row-body{display:block;animation:fadeSlide .25s ease}
 
  /* ===== स्तर 3: चालू / DYS ===== */
- .sub-row{border:1px solid var(--line);border-radius:6px;margin-top:8px;overflow:hidden}
- .sub-row-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;transition:background .12s;font-size:13px}
+ .sub-row{border:1.5px solid var(--line);border-radius:6px;margin-top:8px;overflow:hidden;transition:border-color .2s}
+ .sub-row:hover{border-color:#b0bec5}
+ .sub-row-head{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;user-select:none;
+  transition:background .15s;font-size:12.5px;border-left:3px solid transparent}
  .sub-row-head:hover{background:#f8f9fa}
- .sub-row.open>.sub-row-head{background:#f1f3f4}
- .sub-row .chev{font-size:11px}
- .sub-row.open>.sub-row-head .chev{transform:rotate(90deg);color:var(--blue)}
- .sub-row-icon{font-size:14px;flex-shrink:0}
- .sub-row-label{font-weight:700;display:flex;align-items:center;gap:6px}
- .sub-row-label.active-label{color:#137333}
- .sub-row-label.dys-label{color:#c5221f}
- .sub-row-metrics{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+ .sub-row.open>.sub-row-head{background:#f5f5f5}
+ .sub-row.head-active>.sub-row-head{border-left-color:var(--grn)}
+ .sub-row.head-dys>.sub-row-head{border-left-color:var(--red)}
+ .sub-row .chev{font-size:9px;width:15px;height:15px;border-radius:3px}
+ .sub-row.open>.sub-row-head .chev{transform:rotate(90deg);color:#fff;background:var(--muted)}
+ .sub-row-icon{font-size:13px;flex-shrink:0}
+ .sub-row-label{font-weight:700;display:flex;align-items:center;gap:5px;font-size:12.5px}
+ .sub-row-label.active-label{color:var(--grn)}
+ .sub-row-label.dys-label{color:var(--red)}
+ .sub-row-metrics{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
  .sub-row-body{display:none;border-top:1px solid var(--line);padding:10px}
- .sub-row.open>.sub-row-body{display:block}
+ .sub-row.open>.sub-row-body{display:block;animation:fadeSlide .2s ease}
 
- /* चार्ट */
+ /* ===== चार्ट (अंदरूनी) ===== */
  .eng-ch-wrap{margin:10px 0 2px}
- .eng-ch-wrap h4{margin:0 0 4px;font-size:12px;color:var(--muted);font-weight:500}
+ .eng-ch-wrap h4{margin:0 0 4px;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
  .eng-ch-wrap .ch{position:relative;height:150px}
 
- /* टेबल */
- .tw{overflow-x:auto}
- table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:560px}
- thead th{background:#f1f3f4;color:var(--muted);text-align:left;padding:9px 12px;font-weight:500;white-space:nowrap;border-bottom:1px solid var(--line)}
- tbody td{padding:8px 12px;border-bottom:1px solid #f1f3f4}
- tbody tr:hover{background:#f8f9fa}
- tbody tr.dys{background:#fef7f6} tbody tr.dys td{color:#a50e0e}
- .pill{display:inline-block;min-width:20px;text-align:center;padding:1px 8px;border-radius:10px;font-weight:700;font-size:11.5px}
- .pill.g{background:#e6f4ea;color:#137333} .pill.r{background:#fce8e6;color:#c5221f}
- .st{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px}
- .st.a{background:#e6f4ea;color:#137333} .st.d{background:#fce8e6;color:#c5221f}
+ /* ===== टेबल ===== */
+ .tw{overflow-x:auto;border-radius:6px;border:1px solid var(--line)}
+ table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+ thead th{background:linear-gradient(180deg,#f8f9fa,#f3f4f6);color:var(--muted);text-align:left;
+  padding:9px 12px;font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);
+  font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+ tbody td{padding:8px 12px;border-bottom:1px solid #f3f4f6}
+ tbody tr{transition:background .1s}
+ tbody tr:hover{background:rgba(13,71,161,.03)}
+ tbody tr:nth-child(even){background:#fafbfc}
+ tbody tr:nth-child(even):hover{background:rgba(13,71,161,.03)}
+ tbody tr.dys{background:var(--red-l) !important} tbody tr.dys td{color:var(--red);font-weight:500}
+ .pill{display:inline-block;min-width:22px;text-align:center;padding:2px 9px;border-radius:10px;
+  font-weight:700;font-size:11px;letter-spacing:.3px}
+ .pill.g{background:var(--grn-l);color:var(--grn);border:1px solid rgba(46,125,50,.15)}
+ .pill.r{background:var(--red-l);color:var(--red);border:1px solid rgba(198,40,40,.15)}
+ .st{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
+ .st.a{background:var(--grn-l);color:var(--grn)} .st.d{background:var(--red-l);color:var(--red)}
+
  .mc{color:var(--muted)}
- .m{font-size:11.5px;background:#f1f3f4;border-radius:6px;padding:4px 9px;color:var(--muted);white-space:nowrap}
- .m b{color:var(--ink);font-weight:700}
- .m.warn{background:#fce8e6;color:#c5221f} .m.warn b{color:#c5221f}
- .m.ok{background:#e6f4ea;color:#137333} .m.ok b{color:#137333}
- .m.blue{background:#e8f0fe;color:#1967d2} .m.blue b{color:#1967d2}
- footer{background:var(--card);border-top:1px solid var(--line);margin-top:26px;padding:16px;text-align:center;color:var(--muted);font-size:12px}
- footer .ft-upd{color:var(--ink);font-weight:500}
- @media(max-width:560px){.blk-metrics,.eng-row-metrics,.sub-row-metrics{margin-left:0;width:100%}.blk-name,.eng-row-name{min-width:0}.chart-card .ch{height:160px}.eng-ch-wrap .ch{height:130px}.eng-row-head,.sub-row-head{flex-wrap:wrap}}
+
+ /* ===== फ़ुटर ===== */
+ footer{background:linear-gradient(135deg,#f8f9fa,#fff);border-top:1px solid var(--line);
+  margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:11.5px;letter-spacing:.2px}
+ footer .ft-upd{color:var(--ink);font-weight:600}
+
+ /* ===== स्क्रॉलबार ===== */
+ ::-webkit-scrollbar{width:6px;height:6px}
+ ::-webkit-scrollbar-track{background:transparent}
+ ::-webkit-scrollbar-thumb{background:#c4c4c4;border-radius:3px}
+ ::-webkit-scrollbar-thumb:hover{background:#a0a0a0}
+
+ @media(max-width:560px){
+  .blk-metrics,.eng-row-metrics,.sub-row-metrics{margin-left:0;width:100%}
+  .blk-name,.eng-row-name{min-width:0}
+  .chart-card .ch{height:160px}
+  .eng-ch-wrap .ch{height:130px}
+  .eng-row-head,.sub-row-head{flex-wrap:wrap}
+  .kpi{padding:14px 14px 12px}
+ }
 </style>
 </head>
 <body>
@@ -136,15 +226,15 @@
  <div id="loadNote"></div>
  <div class="kpis" id="kpis"></div>
 
- <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट</div>
+ <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट <span class="line"></span></div>
  <div class="charts">
   <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
   <div class="chart-card"><h4>विकासखण्ड‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
- <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(विकासखण्ड → उपयंत्री → चालू / DYS)</span></div>
+ <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:11.5px;text-transform:none;letter-spacing:0">(विकासखण्ड → उपयंत्री → चालू / DYS)</span> <span class="line"></span></div>
  <div class="toolbar">
-  <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / विकासखण्ड खोजें…">
+  <input type="text" id="search" placeholder="पंचायत / उपयंत्री / विकासखण्ड खोजें…">
   <button class="gbtn" id="expandAll">सभी खोलें</button>
   <button class="gbtn" id="collapseAll">सभी बंद करें</button>
  </div>
@@ -157,7 +247,7 @@
 
 <footer>
  <div>📅 <span class="ft-upd">अंतिम डेटा अपडेट: <span id="updTime">—</span></span></div>
- <div style="margin-top:4px">जिला पंचायत कटनी • VB-G RAM G पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
+ <div style="margin-top:5px">जिला पंचायत कटनी • VB-G RAM G पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
 </footer>
 
 <script>
@@ -315,16 +405,17 @@ function renderKPI(k,engCount){
 
 function mk(id,type,data,extra){if(charts[id])charts[id].destroy();
  charts[id]=new Chart(document.getElementById(id),{type,data,options:{responsive:true,maintainAspectRatio:false,...extra,
-  plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"Roboto"},boxWidth:12,padding:8}}},
-  scales:type==="doughnut"?{}:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:"#f1f3f4"}}}}});}
+  plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"Roboto",weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
+  scales:type==="doughnut"?{}:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
+  y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});}
 function renderTopCharts(){
  const names=BLOCKS.map(b=>b.block);
  mk("chBlockStatus","bar",{labels:names,datasets:[
-  {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"#34a853",borderRadius:3},
-  {label:"Dysfunctional",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"#ea4335",borderRadius:3}]},{});
- const ds=[{label:"अपेक्षित श्रम",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"#1a73e8",borderRadius:3}];
- if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"#fbbc04",borderRadius:3});
- if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"#00897b",borderRadius:3});
+  {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
+  {label:"Dysfunctional",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
+ const ds=[{label:"अपेक्षित श्रम",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
+ if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
 }
 function buildEngChart(b){
@@ -332,11 +423,12 @@ function buildEngChart(b){
  if(blockCharts[id])blockCharts[id].destroy();
  const names=b.engs.map(e=>e.engineer);
  blockCharts[id]=new Chart(cv,{type:"bar",data:{labels:names,datasets:[
-  {label:"सक्रिय (WIP)",data:b.engs.map(e=>e.m.wip),backgroundColor:"#34a853",borderRadius:3},
-  {label:"Dysfunctional",data:b.engs.map(e=>e.m.dys),backgroundColor:"#ea4335",borderRadius:3}]},
+  {label:"सक्रिय (WIP)",data:b.engs.map(e=>e.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
+  {label:"Dysfunctional",data:b.engs.map(e=>e.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},
   options:{responsive:true,maintainAspectRatio:false,
-   plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12,padding:8}}},
-   scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:"#f1f3f4"}}}}});
+   plugins:{legend:{position:"bottom",labels:{font:{size:10,weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
+   scales:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
+  y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});
 }
 
 function renderBlocks(filter,forceExpand){
@@ -358,7 +450,7 @@ function renderBlocks(filter,forceExpand){
    let subHTML="";
    if(ar.length){
     const sk=ek+"::active";const sOpen=forceExpand||expandedSub.has(sk);
-    subHTML+=`<div class="sub-row ${sOpen?'open':''}">
+    subHTML+=`<div class="sub-row head-active ${sOpen?'open':''}">
      <div class="sub-row-head" data-toggle-sub="${sk}">
       <span class="chev">▶</span>
       <span class="sub-row-icon">✅</span>
@@ -369,7 +461,7 @@ function renderBlocks(filter,forceExpand){
     </div>`;}
    if(dr.length){
     const sk=ek+"::dys";const sOpen=forceExpand||expandedSub.has(sk);
-    subHTML+=`<div class="sub-row ${sOpen?'open':''}">
+    subHTML+=`<div class="sub-row head-dys ${sOpen?'open':''}">
      <div class="sub-row-head" data-toggle-sub="${sk}">
       <span class="chev">▶</span>
       <span class="sub-row-icon">❌</span>
