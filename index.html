@@ -12,7 +12,6 @@
   --blue:#1a73e8; --green:#34a853; --red:#ea4335; --yellow:#fbbc04; --teal:#00897b;
   --ink:#202124; --muted:#5f6368; --line:#dadce0; --bg:#f8f9fa; --card:#ffffff;
   --shadow:0 1px 2px 0 rgba(60,64,67,.30),0 1px 3px 1px rgba(60,64,67,.15);
-  --shadow2:0 1px 3px 0 rgba(60,64,67,.30),0 4px 8px 3px rgba(60,64,67,.15);
  }
  *{box-sizing:border-box}
  body{margin:0;font-family:"Roboto","Noto Sans Devanagari",system-ui,Arial,sans-serif;
@@ -56,13 +55,13 @@
  .filter-chip:hover{transform:scale(1.05);box-shadow:0 1px 4px rgba(0,0,0,.18)}
  .filter-chip.active{outline:2px solid currentColor;outline-offset:1px}
 
- /* विकासखण्ड accordion */
+ /* विकासखण्ड accordion — स्तर 1 */
  .block{background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
  .block-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s}
  .block-head:hover{background:#f8f9fa}
  .block.open .block-head{background:#e8f0fe}
  .blk-name{font-weight:700;font-size:15px;color:var(--ink);min-width:120px;display:flex;align-items:center;gap:8px}
- .chev{transition:transform .2s;color:var(--muted);font-size:13px}
+ .chev{transition:transform .2s;color:var(--muted);font-size:13px;flex-shrink:0}
  .block.open .chev{transform:rotate(90deg);color:var(--blue)}
  .blk-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
  .m{font-size:11.5px;background:#f1f3f4;border-radius:6px;padding:4px 9px;color:var(--muted);white-space:nowrap}
@@ -72,13 +71,25 @@
  .m.blue{background:#e8f0fe;color:#1967d2} .m.blue b{color:#1967d2}
  .block-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
  .block.open .block-body{display:block}
- .eng-ch-wrap{margin:14px 0}
+
+ /* उपयंत्री accordion — स्तर 2 (ब्लॉक जैसी पंक्ति) */
+ .eng-row{border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden;background:#fff}
+ .eng-row-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .12s}
+ .eng-row-head:hover{background:#f8f9fa}
+ .eng-row.open .eng-row-head{background:#e8f0fe}
+ .eng-row .chev{transition:transform .2s;color:var(--muted);font-size:12px;flex-shrink:0}
+ .eng-row.open .chev{transform:rotate(90deg);color:var(--blue)}
+ .eng-row-name{font-weight:700;font-size:14px;color:var(--blue);min-width:100px;display:flex;align-items:center;gap:6px}
+ .eng-row-sec{font-size:11.5px;color:var(--muted);margin-left:2px}
+ .eng-row-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+ .eng-row-body{display:none;border-top:1px solid var(--line)}
+ .eng-row.open .eng-row-body{display:block;padding:14px}
+
+ /* चार्ट */
+ .eng-ch-wrap{margin:14px 0 4px}
  .eng-ch-wrap .ch{position:relative;height:240px}
- .eng{border:1px solid var(--line);border-radius:8px;margin-top:12px;overflow:hidden}
- .eng-head{background:#f8f9fa;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
- .eng-head .en{font-weight:700;color:var(--blue);font-size:14px}
- .eng-head .sec{font-size:11.5px;color:var(--muted)}
- .eng-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+
+ /* टेबल */
  .tw{overflow-x:auto}
  table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:560px}
  thead th{background:#f1f3f4;color:var(--muted);text-align:left;padding:9px 12px;font-weight:500;white-space:nowrap;border-bottom:1px solid var(--line)}
@@ -92,7 +103,7 @@
  .mc{color:var(--muted)}
  footer{background:var(--card);border-top:1px solid var(--line);margin-top:26px;padding:16px;text-align:center;color:var(--muted);font-size:12px}
  footer .ft-upd{color:var(--ink);font-weight:500}
- @media(max-width:560px){.blk-metrics{margin-left:0;width:100%}.blk-name{min-width:0}.chart-card .ch{height:240px}}
+ @media(max-width:560px){.blk-metrics,.eng-row-metrics{margin-left:0;width:100%}.blk-name,.eng-row-name{min-width:0}.chart-card .ch{height:240px}.eng-row-head{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -117,7 +128,7 @@
   <div class="chart-card"><h4>विकासखण्ड‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
- <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(पंक्ति पर क्लिक करें → उपयंत्री‑वार विस्तार)</span></div>
+ <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(विकासखण्ड → उपयंत्री → पंचायत तीन स्तर)</span></div>
  <div class="toolbar">
   <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / विकासखण्ड खोजें…">
   <button class="gbtn" id="expandAll">सभी विकासखण्ड खोलें</button>
@@ -136,28 +147,26 @@
 </footer>
 
 <script>
-/* ====== REPO yahan badlein (autoLoad dono repo try karta hai) ====== */
 const REPO_PRIMARY = "VBGRAMJI";
 const REPO_FALLBACK = "VBGRMAJI-KATNI";
 const FNAME = "data.json";
 const STORE = "mgn_dash_v5";
 const LS_UPD = "mgn_dash_lastupd";
-let DATA=[], BLOCKS=[], charts={}, blockCharts={}, expanded=new Set();
+let DATA=[], BLOCKS=[], charts={}, blockCharts={};
+let expanded=new Set();       // विकासखण्ड keys
+let expandedEng=new Set();    // "ब्लॉक::उपयंत्री" keys
 let FLAGS={};
-let activeFilter = null; // null | "wip" | "dys"
+let activeFilter = null;
 
 /* ---------- helpers ---------- */
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
 const clean=s=>String(s==null?"":s).trim();
 const up=s=>clean(s).toUpperCase();
-const norm=s=>(s||"").toString().replace(/\s+/g,"").toUpperCase();
 const san=s=>(s||"x").toString().replace(/[^a-zA-Z0-9]/g,"_");
 function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="DYSFUNCTIONAL"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
 
-/* column classifier (priority order; budget/mandays before labour-engagement) */
 function classify(h){
  h=up(h); if(!h) return null;
- // column1, column2, unnamed_0 etc. ignore karo
  if(/^COLUMN\d*$/i.test(h)) return null;
  if(/^UNNAMED/i.test(h)) return null;
  if(h.includes("BUDGET")) return "budget";
@@ -225,9 +234,9 @@ function compute(d){
  return {k:metrics(d),blocks,engCount:new Set(d.map(r=>r.engineer)).size};
 }
 
-/* ---------- metric chips (clickable WIP / Dys) ---------- */
+/* ---------- metric chips ---------- */
 function metricChips(m,scope){
- let h=`<span class="m blue">कुल पंचायतें <b>${m.total}</b></span>`;
+ let h=`<span class="m blue">कुल <b>${m.total}</b></span>`;
  const wipCls="m ok filter-chip"+(activeFilter==="wip"?" active":"");
  const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
@@ -235,11 +244,11 @@ function metricChips(m,scope){
  h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
- if(scope==="top"){ if(FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`; }
+ if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
  return h;
 }
 
-/* ---------- filter bar ---------- */
+/* ---------- filter ---------- */
 function updateFilterBar(){
  const bar=document.getElementById("filterBar");
  const lbl=document.getElementById("filterLabel");
@@ -247,14 +256,10 @@ function updateFilterBar(){
  bar.classList.add("show");
  lbl.textContent=activeFilter==="wip"?"🔍 फ़िल्टर: सक्रिय पंचायतें (Works in Progress > 0)":"🔍 फ़िल्टर: Dysfunctional पंचायतें (Works in Progress = 0)";
 }
-function setFilter(f){
- if(activeFilter===f){activeFilter=null;}else{activeFilter=f;}
- updateFilterBar();
- renderBlocks(document.getElementById("search").value,false);
-}
+function setFilter(f){activeFilter=(activeFilter===f)?null:f;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
 function clearFilter(){activeFilter=null;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
 
-/* ---------- table columns ---------- */
+/* ---------- table ---------- */
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"अपेक्षित श्रम"}];
  if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे MR"});
@@ -321,7 +326,7 @@ function buildEngChart(b){
    scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
 }
 
-/* ---------- विकासखण्ड accordion ---------- */
+/* ---------- विकासखण्ड accordion + उपयंत्री sub-accordion ---------- */
 function renderBlocks(filter,forceExpand){
  const q=(filter||"").trim().toLowerCase();
  const wrap=document.getElementById("blocks");
@@ -329,21 +334,26 @@ function renderBlocks(filter,forceExpand){
  BLOCKS.forEach(b=>{
   let engHTML="";let blockHasMatch=false;
   b.engs.forEach(e=>{
-   // पहले search filter, फिर status filter
    let frows=q?e.rows.filter(r=>matchRow(r,q)):[...e.rows];
    if(activeFilter==="wip") frows=frows.filter(r=>r.wip>0);
    if(activeFilter==="dys") frows=frows.filter(r=>r.wip===0);
    if(frows.length===0)return;
    blockHasMatch=true;
-   engHTML+=`<div class="eng">
-     <div class="eng-head"><span class="en">👷 ${e.engineer}</span>${e.sector?`<span class="sec">• सेक्टर: ${e.sector}</span>`:""}
-      <span class="eng-metrics">${metricChips(e.m,"eng")}</span></div>
-     ${tableHTML(frows)}</div>`;});
+   const ek=b.block+"::"+e.engineer;
+   const eOpen=forceExpand||expandedEng.has(ek);
+   engHTML+=`<div class="eng-row ${eOpen?'open':''}">
+     <div class="eng-row-head" data-toggle-eng="${ek}">
+      <span class="chev">▶</span>
+      <span class="eng-row-name">👷 ${e.engineer}</span>
+      ${e.sector?`<span class="eng-row-sec">• सेक्टर: ${e.sector}</span>`:""}
+      <span class="eng-row-metrics">${metricChips(e.m,"eng")}</span>
+     </div>
+     <div class="eng-row-body">${tableHTML(frows)}</div>
+    </div>`;});
   if(q&&!blockHasMatch)return;
-  // status filter ke bina koi engineer match na kare to block hide
   if(!q&&activeFilter&&!blockHasMatch)return;
-  const open=forceExpand||expanded.has(b.block);
-  html+=`<div class="block ${open?'open':''}" data-block="${b.block}">
+  const bOpen=forceExpand||expanded.has(b.block);
+  html+=`<div class="block ${bOpen?'open':''}" data-block="${b.block}">
    <div class="block-head" data-toggle="${b.block}">
     <span class="chev">▶</span>
     <span class="blk-name">🧱 ${b.block}</span>
@@ -355,11 +365,11 @@ function renderBlocks(filter,forceExpand){
    </div></div>`;});
  if(!html)html=`<div class="mc" style="padding:20px;text-align:center">कोई विकासखण्ड मेल नहीं खाया</div>`;
  wrap.innerHTML=html;
- BLOCKS.forEach(b=>{if((forceExpand||expanded.has(b.block)))buildEngChart(b);});
+ BLOCKS.forEach(b=>{if(forceExpand||expanded.has(b.block))buildEngChart(b);});
 }
 function matchRow(r,q){return r.panchayat.toLowerCase().includes(q)||r.engineer.toLowerCase().includes(q)||r.block.toLowerCase().includes(q)||(r.sector||"").toLowerCase().includes(q);}
 
-/* ---------- footer / stamp ---------- */
+/* ---------- stamp ---------- */
 function stamp(){
  const t=new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
  document.getElementById("updTime").textContent=t;
@@ -375,25 +385,29 @@ function renderAll(d){
 }
 
 /* ---------- events ---------- */
-// विकासखण्ड toggle
 document.getElementById("blocks").addEventListener("click",e=>{
- // filter chip click check karo pehle
+ /* फ़िल्टर चिप */
  const chip=e.target.closest(".filter-chip");
  if(chip){e.stopPropagation();setFilter(chip.dataset.filter);return;}
- const h=e.target.closest("[data-toggle]");if(!h)return;
- const b=h.dataset.toggle;
- if(expanded.has(b))expanded.delete(b);else expanded.add(b);
- renderBlocks(document.getElementById("search").value,false);});
+ /* उपयंत्री toggle */
+ const engH=e.target.closest("[data-toggle-eng]");
+ if(engH){e.stopPropagation();const k=engH.dataset.toggleEng;
+  if(expandedEng.has(k))expandedEng.delete(k);else expandedEng.add(k);
+  renderBlocks(document.getElementById("search").value,false);return;}
+ /* विकासखण्ड toggle */
+ const blkH=e.target.closest("[data-toggle]");
+ if(blkH){const b=blkH.dataset.toggle;
+  if(expanded.has(b))expanded.delete(b);else expanded.add(b);
+  renderBlocks(document.getElementById("search").value,false);}
+});
 
-// search
 let db;document.getElementById("search").addEventListener("input",e=>{clearTimeout(db);const v=e.target.value;
  db=setTimeout(()=>renderBlocks(v,v.trim()!==""),180);});
 
-// expand / collapse
-document.getElementById("expandAll").addEventListener("click",()=>{BLOCKS.forEach(b=>expanded.add(b.block));renderBlocks(document.getElementById("search").value,false);});
-document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();renderBlocks(document.getElementById("search").value,false);});
-
-// filter bar clear
+document.getElementById("expandAll").addEventListener("click",()=>{
+ BLOCKS.forEach(b=>{expanded.add(b.block);b.engs.forEach(e=>expandedEng.add(b.block+"::"+e.engineer));});
+ renderBlocks(document.getElementById("search").value,false);});
+document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();expandedEng.clear();renderBlocks(document.getElementById("search").value,false);});
 document.getElementById("clearFilter").addEventListener("click",clearFilter);
 
 /* ---------- load ---------- */
