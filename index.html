@@ -37,8 +37,6 @@
  .toolbar input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,115,232,.2)}
  .gbtn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:500;font-size:13px;padding:8px 14px;border-radius:8px;font-family:inherit}
  .gbtn:hover{background:#f1f3f4}
- .gbtn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
- .gbtn.primary:hover{background:#1765cc}
  .charts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-bottom:8px}
  .chart-card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px}
  .chart-card h4{margin:0 0 10px;font-size:13.5px;color:var(--muted);font-weight:500}
@@ -55,35 +53,45 @@
  .filter-chip:hover{transform:scale(1.05);box-shadow:0 1px 4px rgba(0,0,0,.18)}
  .filter-chip.active{outline:2px solid currentColor;outline-offset:1px}
 
- /* विकासखण्ड accordion — स्तर 1 */
+ /* ===== स्तर 1: विकासखण्ड ===== */
  .block{background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
  .block-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s}
  .block-head:hover{background:#f8f9fa}
  .block.open .block-head{background:#e8f0fe}
  .blk-name{font-weight:700;font-size:15px;color:var(--ink);min-width:120px;display:flex;align-items:center;gap:8px}
  .chev{transition:transform .2s;color:var(--muted);font-size:13px;flex-shrink:0}
- .block.open .chev{transform:rotate(90deg);color:var(--blue)}
+ .block.open>.block-head .chev{transform:rotate(90deg);color:var(--blue)}
  .blk-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
- .m{font-size:11.5px;background:#f1f3f4;border-radius:6px;padding:4px 9px;color:var(--muted);white-space:nowrap}
- .m b{color:var(--ink);font-weight:700}
- .m.warn{background:#fce8e6;color:#c5221f} .m.warn b{color:#c5221f}
- .m.ok{background:#e6f4ea;color:#137333} .m.ok b{color:#137333}
- .m.blue{background:#e8f0fe;color:#1967d2} .m.blue b{color:#1967d2}
  .block-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
- .block.open .block-body{display:block}
+ .block.open>.block-body{display:block}
 
- /* उपयंत्री accordion — स्तर 2 (ब्लॉक जैसी पंक्ति) */
+ /* ===== स्तर 2: उपयंत्री ===== */
  .eng-row{border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden;background:#fff}
  .eng-row-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .12s}
  .eng-row-head:hover{background:#f8f9fa}
- .eng-row.open .eng-row-head{background:#e8f0fe}
- .eng-row .chev{transition:transform .2s;color:var(--muted);font-size:12px;flex-shrink:0}
- .eng-row.open .chev{transform:rotate(90deg);color:var(--blue)}
+ .eng-row.open>.eng-row-head{background:#e8f0fe}
+ .eng-row .chev{font-size:12px}
+ .eng-row.open>.eng-row-head .chev{transform:rotate(90deg);color:var(--blue)}
  .eng-row-name{font-weight:700;font-size:14px;color:var(--blue);min-width:100px;display:flex;align-items:center;gap:6px}
  .eng-row-sec{font-size:11.5px;color:var(--muted);margin-left:2px}
  .eng-row-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
- .eng-row-body{display:none;border-top:1px solid var(--line)}
- .eng-row.open .eng-row-body{display:block;padding:14px}
+ .eng-row-body{display:none;border-top:1px solid var(--line);padding:0 10px 10px}
+ .eng-row.open>.eng-row-body{display:block}
+
+ /* ===== स्तर 3: चालू / DYS ===== */
+ .sub-row{border:1px solid var(--line);border-radius:6px;margin-top:8px;overflow:hidden}
+ .sub-row-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;transition:background .12s;font-size:13px}
+ .sub-row-head:hover{background:#f8f9fa}
+ .sub-row.open>.sub-row-head{background:#f1f3f4}
+ .sub-row .chev{font-size:11px}
+ .sub-row.open>.sub-row-head .chev{transform:rotate(90deg);color:var(--blue)}
+ .sub-row-icon{font-size:14px;flex-shrink:0}
+ .sub-row-label{font-weight:700;display:flex;align-items:center;gap:6px}
+ .sub-row-label.active-label{color:#137333}
+ .sub-row-label.dys-label{color:#c5221f}
+ .sub-row-metrics{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+ .sub-row-body{display:none;border-top:1px solid var(--line);padding:10px}
+ .sub-row.open>.sub-row-body{display:block}
 
  /* चार्ट */
  .eng-ch-wrap{margin:14px 0 4px}
@@ -101,9 +109,14 @@
  .st{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px}
  .st.a{background:#e6f4ea;color:#137333} .st.d{background:#fce8e6;color:#c5221f}
  .mc{color:var(--muted)}
+ .m{font-size:11.5px;background:#f1f3f4;border-radius:6px;padding:4px 9px;color:var(--muted);white-space:nowrap}
+ .m b{color:var(--ink);font-weight:700}
+ .m.warn{background:#fce8e6;color:#c5221f} .m.warn b{color:#c5221f}
+ .m.ok{background:#e6f4ea;color:#137333} .m.ok b{color:#137333}
+ .m.blue{background:#e8f0fe;color:#1967d2} .m.blue b{color:#1967d2}
  footer{background:var(--card);border-top:1px solid var(--line);margin-top:26px;padding:16px;text-align:center;color:var(--muted);font-size:12px}
  footer .ft-upd{color:var(--ink);font-weight:500}
- @media(max-width:560px){.blk-metrics,.eng-row-metrics{margin-left:0;width:100%}.blk-name,.eng-row-name{min-width:0}.chart-card .ch{height:240px}.eng-row-head{flex-wrap:wrap}}
+ @media(max-width:560px){.blk-metrics,.eng-row-metrics,.sub-row-metrics{margin-left:0;width:100%}.blk-name,.eng-row-name{min-width:0}.chart-card .ch{height:240px}.eng-row-head,.sub-row-head{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -128,10 +141,10 @@
   <div class="chart-card"><h4>विकासखण्ड‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
- <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(विकासखण्ड → उपयंत्री → पंचायत तीन स्तर)</span></div>
+ <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(विकासखण्ड → उपयंत्री → चालू / DYS)</span></div>
  <div class="toolbar">
   <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / विकासखण्ड खोजें…">
-  <button class="gbtn" id="expandAll">सभी विकासखण्ड खोलें</button>
+  <button class="gbtn" id="expandAll">सभी खोलें</button>
   <button class="gbtn" id="collapseAll">सभी बंद करें</button>
  </div>
  <div id="filterBar">
@@ -153,12 +166,11 @@ const FNAME = "data.json";
 const STORE = "mgn_dash_v5";
 const LS_UPD = "mgn_dash_lastupd";
 let DATA=[], BLOCKS=[], charts={}, blockCharts={};
-let expanded=new Set();       // विकासखण्ड keys
-let expandedEng=new Set();    // "ब्लॉक::उपयंत्री" keys
-let FLAGS={};
-let activeFilter = null;
+let expanded=new Set();        // विकासखण्ड
+let expandedEng=new Set();     // "ब्लॉक::उपयंत्री"
+let expandedSub=new Set();     // "ब्लॉक::उपयंत्री::active" / "::dys"
+let FLAGS={}, activeFilter=null;
 
-/* ---------- helpers ---------- */
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
 const clean=s=>String(s==null?"":s).trim();
 const up=s=>clean(s).toUpperCase();
@@ -216,7 +228,6 @@ function normalize(input){
  return [];
 }
 
-/* ---------- compute ---------- */
 function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
 function dysCount(list){return list.filter(r=>r.wip===0).length;}
 function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCount(list),
@@ -230,7 +241,7 @@ function compute(d){
  blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
   b.rows.forEach(r=>{if(!emap[r.engineer]){emap[r.engineer]={engineer:r.engineer,sector:r.sector,rows:[]};b.engs.push(emap[r.engineer]);}
    emap[r.engineer].rows.push(r); if(r.sector&&r.sector!=="—")emap[r.engineer].sector=r.sector;});
-  b.engs.forEach(e=>e.m=metrics(e.rows));});
+  b.engs.forEach(e=>{e.m=metrics(e.rows);e.activeRows=e.rows.filter(r=>r.wip>0);e.dysRows=e.rows.filter(r=>r.wip===0);e.activeM=metrics(e.activeRows);e.dysM=metrics(e.dysRows);});});
  return {k:metrics(d),blocks,engCount:new Set(d.map(r=>r.engineer)).size};
 }
 
@@ -247,14 +258,22 @@ function metricChips(m,scope){
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
  return h;
 }
+/* स्तर 3 के लिए छोटे chips (WIP/Dys हटाकर केवल संख्यात्मक) */
+function subChips(m){
+ let h=`<span class="m blue">पंचायतें <b>${m.total}</b></span>`;
+ h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
+ if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
+ if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
+ if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
+ return h;
+}
 
 /* ---------- filter ---------- */
 function updateFilterBar(){
- const bar=document.getElementById("filterBar");
- const lbl=document.getElementById("filterLabel");
+ const bar=document.getElementById("filterBar");const lbl=document.getElementById("filterLabel");
  if(!activeFilter){bar.classList.remove("show");return;}
  bar.classList.add("show");
- lbl.textContent=activeFilter==="wip"?"🔍 फ़िल्टर: सक्रिय पंचायतें (Works in Progress > 0)":"🔍 फ़िल्टर: Dysfunctional पंचायतें (Works in Progress = 0)";
+ lbl.textContent=activeFilter==="wip"?"🔍 फ़िल्टर: केवल चालू पंचायतें (WIP > 0)":"🔍 फ़िल्टर: केवल Dysfunctional पंचायतें (WIP = 0)";
 }
 function setFilter(f){activeFilter=(activeFilter===f)?null:f;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
 function clearFilter(){activeFilter=null;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
@@ -314,8 +333,7 @@ function renderTopCharts(){
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
 }
 function buildEngChart(b){
- const id="chEng_"+san(b.block);
- const cv=document.getElementById(id);if(!cv)return;
+ const id="chEng_"+san(b.block);const cv=document.getElementById(id);if(!cv)return;
  if(blockCharts[id])blockCharts[id].destroy();
  const names=b.engs.map(e=>e.engineer);
  blockCharts[id]=new Chart(cv,{type:"bar",data:{labels:names,datasets:[
@@ -326,7 +344,7 @@ function buildEngChart(b){
    scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
 }
 
-/* ---------- विकासखण्ड accordion + उपयंत्री sub-accordion ---------- */
+/* ---------- तीन-स्तरीय accordion ---------- */
 function renderBlocks(filter,forceExpand){
  const q=(filter||"").trim().toLowerCase();
  const wrap=document.getElementById("blocks");
@@ -334,13 +352,41 @@ function renderBlocks(filter,forceExpand){
  BLOCKS.forEach(b=>{
   let engHTML="";let blockHasMatch=false;
   b.engs.forEach(e=>{
-   let frows=q?e.rows.filter(r=>matchRow(r,q)):[...e.rows];
-   if(activeFilter==="wip") frows=frows.filter(r=>r.wip>0);
-   if(activeFilter==="dys") frows=frows.filter(r=>r.wip===0);
-   if(frows.length===0)return;
+   // search filter
+   let ar=q?e.activeRows.filter(r=>matchRow(r,q)):[...e.activeRows];
+   let dr=q?e.dysRows.filter(r=>matchRow(r,q)):[...e.dysRows];
+   // global filter: यदि wip filter तो sirf active, dys filter तो sirf dys
+   const showActive=!activeFilter||activeFilter==="wip";
+   const showDys=!activeFilter||activeFilter==="dys";
+   if(!showActive)ar=[]; if(!showDys)dr=[];
+   if(!ar.length&&!dr.length)return;
    blockHasMatch=true;
    const ek=b.block+"::"+e.engineer;
    const eOpen=forceExpand||expandedEng.has(ek);
+   // स्तर 3 rows बनाओ
+   let subHTML="";
+   if(ar.length){
+    const sk=ek+"::active";const sOpen=forceExpand||expandedSub.has(sk);
+    subHTML+=`<div class="sub-row ${sOpen?'open':''}">
+     <div class="sub-row-head" data-toggle-sub="${sk}">
+      <span class="chev">▶</span>
+      <span class="sub-row-icon">✅</span>
+      <span class="sub-row-label active-label">काम चालू (Work in Progress) — <b>${ar.length}</b> पंचायतें</span>
+      <span class="sub-row-metrics">${subChips(e.activeM)}</span>
+     </div>
+     <div class="sub-row-body">${tableHTML(ar)}</div>
+    </div>`;}
+   if(dr.length){
+    const sk=ek+"::dys";const sOpen=forceExpand||expandedSub.has(sk);
+    subHTML+=`<div class="sub-row ${sOpen?'open':''}">
+     <div class="sub-row-head" data-toggle-sub="${sk}">
+      <span class="chev">▶</span>
+      <span class="sub-row-icon">❌</span>
+      <span class="sub-row-label dys-label">Dysfunctional — <b>${dr.length}</b> पंचायतें</span>
+      <span class="sub-row-metrics">${subChips(e.dysM)}</span>
+     </div>
+     <div class="sub-row-body">${tableHTML(dr)}</div>
+    </div>`;}
    engHTML+=`<div class="eng-row ${eOpen?'open':''}">
      <div class="eng-row-head" data-toggle-eng="${ek}">
       <span class="chev">▶</span>
@@ -348,7 +394,7 @@ function renderBlocks(filter,forceExpand){
       ${e.sector?`<span class="eng-row-sec">• सेक्टर: ${e.sector}</span>`:""}
       <span class="eng-row-metrics">${metricChips(e.m,"eng")}</span>
      </div>
-     <div class="eng-row-body">${tableHTML(frows)}</div>
+     <div class="eng-row-body">${subHTML}</div>
     </div>`;});
   if(q&&!blockHasMatch)return;
   if(!q&&activeFilter&&!blockHasMatch)return;
@@ -378,7 +424,6 @@ function stamp(){
  try{localStorage.setItem(LS_UPD,t);}catch(e){}
 }
 
-/* ---------- master ---------- */
 function renderAll(d){
  DATA=d;const r=compute(d);BLOCKS=r.blocks;
  renderKPI(r.k,r.engCount);renderTopCharts();renderBlocks("",false);stamp();
@@ -386,15 +431,19 @@ function renderAll(d){
 
 /* ---------- events ---------- */
 document.getElementById("blocks").addEventListener("click",e=>{
- /* फ़िल्टर चिप */
  const chip=e.target.closest(".filter-chip");
  if(chip){e.stopPropagation();setFilter(chip.dataset.filter);return;}
- /* उपयंत्री toggle */
+ /* स्तर 3: चालू/DYS toggle */
+ const subH=e.target.closest("[data-toggle-sub]");
+ if(subH){e.stopPropagation();const k=subH.dataset.toggleSub;
+  if(expandedSub.has(k))expandedSub.delete(k);else expandedSub.add(k);
+  renderBlocks(document.getElementById("search").value,false);return;}
+ /* स्तर 2: उपयंत्री toggle */
  const engH=e.target.closest("[data-toggle-eng]");
  if(engH){e.stopPropagation();const k=engH.dataset.toggleEng;
   if(expandedEng.has(k))expandedEng.delete(k);else expandedEng.add(k);
   renderBlocks(document.getElementById("search").value,false);return;}
- /* विकासखण्ड toggle */
+ /* स्तर 1: विकासखण्ड toggle */
  const blkH=e.target.closest("[data-toggle]");
  if(blkH){const b=blkH.dataset.toggle;
   if(expanded.has(b))expanded.delete(b);else expanded.add(b);
@@ -405,9 +454,12 @@ let db;document.getElementById("search").addEventListener("input",e=>{clearTimeo
  db=setTimeout(()=>renderBlocks(v,v.trim()!==""),180);});
 
 document.getElementById("expandAll").addEventListener("click",()=>{
- BLOCKS.forEach(b=>{expanded.add(b.block);b.engs.forEach(e=>expandedEng.add(b.block+"::"+e.engineer));});
+ BLOCKS.forEach(b=>{expanded.add(b.block);
+  b.engs.forEach(e=>{const ek=b.block+"::"+e.engineer;expandedEng.add(ek);
+   if(e.activeRows.length)expandedSub.add(ek+"::active");
+   if(e.dysRows.length)expandedSub.add(ek+"::dys");});});
  renderBlocks(document.getElementById("search").value,false);});
-document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();expandedEng.clear();renderBlocks(document.getElementById("search").value,false);});
+document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();expandedEng.clear();expandedSub.clear();renderBlocks(document.getElementById("search").value,false);});
 document.getElementById("clearFilter").addEventListener("click",clearFilter);
 
 /* ---------- load ---------- */
@@ -420,7 +472,6 @@ async function autoLoad(){
  return false;
 }
 
-/* ---------- init ---------- */
 (async function(){
  try{const u=localStorage.getItem(LS_UPD);if(u){document.getElementById("updTime").textContent=u;document.getElementById("updChip").textContent="🔄 अपडेट: "+u;}}catch(e){}
  const saved=localStorage.getItem(STORE);
