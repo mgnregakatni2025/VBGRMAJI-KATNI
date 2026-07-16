@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ब्लॉक‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
+<title>विकासखण्ड‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -44,7 +44,19 @@
  .chart-card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px}
  .chart-card h4{margin:0 0 10px;font-size:13.5px;color:var(--muted);font-weight:500}
  .chart-card .ch{position:relative;height:300px}
- /* block accordion */
+
+ /* फ़िल्टर बार */
+ #filterBar{display:none;background:#e8f0fe;border:1px solid #aecbfa;border-radius:8px;padding:10px 16px;margin-bottom:14px;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--blue)}
+ #filterBar.show{display:flex}
+ #filterBar .clear-btn{cursor:pointer;background:var(--red);color:#fff;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-family:inherit;font-weight:500}
+ #filterBar .clear-btn:hover{background:#d93025}
+
+ /* फ़िल्टर चिप्स */
+ .filter-chip{cursor:pointer;transition:transform .12s,box-shadow .12s;user-select:none}
+ .filter-chip:hover{transform:scale(1.05);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+ .filter-chip.active{outline:2px solid currentColor;outline-offset:1px}
+
+ /* विकासखण्ड accordion */
  .block{background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
  .block-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s}
  .block-head:hover{background:#f8f9fa}
@@ -77,14 +89,9 @@
  .pill.g{background:#e6f4ea;color:#137333} .pill.r{background:#fce8e6;color:#c5221f}
  .st{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px}
  .st.a{background:#e6f4ea;color:#137333} .st.d{background:#fce8e6;color:#c5221f}
+ .mc{color:var(--muted)}
  footer{background:var(--card);border-top:1px solid var(--line);margin-top:26px;padding:16px;text-align:center;color:var(--muted);font-size:12px}
  footer .ft-upd{color:var(--ink);font-weight:500}
- details.manual{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:6px 16px;margin-top:20px}
- details.manual summary{cursor:pointer;font-weight:500;color:var(--blue);padding:10px 0}
- .manual textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:monospace;font-size:12px;margin-top:8px}
- .manual .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
- .manual input[type=text]{flex:1 1 240px;padding:8px;border:1px solid var(--line);border-radius:8px}
- .muted{color:var(--muted)}
  @media(max-width:560px){.blk-metrics{margin-left:0;width:100%}.blk-name{min-width:0}.chart-card .ch{height:240px}}
 </style>
 </head>
@@ -94,7 +101,7 @@
  <div class="row">
   <div>
    <h1>मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला कटनी</h1>
-   <div class="sub">मनरेगा (VB‑G RAM G) — ब्लॉक वार पंचायत डैशबोर्ड • e‑Muster रोल विश्लेषण</div>
+   <div class="sub">VB-G RAM G — विकासखण्ड वार पंचायत डैशबोर्ड • e‑Muster रोल विश्लेषण</div>
   </div>
   <div class="updchip" id="updChip">⏳ लोड हो रहा है…</div>
  </div>
@@ -104,34 +111,28 @@
  <div id="loadNote"></div>
  <div class="kpis" id="kpis"></div>
 
- <div class="stitle"><span class="ic">📊</span> ब्लॉक‑वार तुलनात्मक चार्ट</div>
+ <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट</div>
  <div class="charts">
-  <div class="chart-card"><h4>ब्लॉक‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
-  <div class="chart-card"><h4>ब्लॉक‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
- <div class="stitle"><span class="ic">🧱</span> ब्लॉक‑वार विस्तृत रिपोर्ट <span class="muted" style="font-weight:400;font-size:12.5px">(पंक्ति पर क्लिक करें → उपयंत्री‑वार विस्तार)</span></div>
+ <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:12.5px">(पंक्ति पर क्लिक करें → उपयंत्री‑वार विस्तार)</span></div>
  <div class="toolbar">
-  <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / ब्लॉक खोजें…">
-  <button class="gbtn" id="expandAll">सभी ब्लॉक खोलें</button>
+  <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / विकासखण्ड खोजें…">
+  <button class="gbtn" id="expandAll">सभी विकासखण्ड खोलें</button>
   <button class="gbtn" id="collapseAll">सभी बंद करें</button>
  </div>
+ <div id="filterBar">
+  <span id="filterLabel"></span>
+  <button class="clear-btn" id="clearFilter">✕ फ़िल्टर हटाएं</button>
+ </div>
  <div id="blocks"></div>
-
- <details class="manual">
-  <summary>🛠️ मैन्युअल डेटा लोड (यदि auto‑load न चले)</summary>
-  <div class="row">
-   <input type="text" id="ghUrl" value="https://raw.githubusercontent.com/mgnregakatni2025/VBGRAMJI/main/data.json">
-   <button class="gbtn primary" id="loadGh">GitHub से लोड करें</button>
-  </div>
-  <textarea id="pasteArea" placeholder="या यहाँ JSON पेस्ट करें…"></textarea>
-  <div class="row"><button class="gbtn primary" id="loadPaste">पेस्ट लागू करें</button><span class="muted" id="loadStatus"></span></div>
- </details>
 </div>
 
 <footer>
  <div>📅 <span class="ft-upd">अंतिम डेटा अपडेट: <span id="updTime">—</span></span></div>
- <div style="margin-top:4px">जिला पंचायत कटनी • MGNREGA पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
+ <div style="margin-top:4px">जिला पंचायत कटनी • VB-G RAM G पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
 </footer>
 
 <script>
@@ -143,6 +144,7 @@ const STORE = "mgn_dash_v5";
 const LS_UPD = "mgn_dash_lastupd";
 let DATA=[], BLOCKS=[], charts={}, blockCharts={}, expanded=new Set();
 let FLAGS={};
+let activeFilter = null; // null | "wip" | "dys"
 
 /* ---------- helpers ---------- */
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
@@ -155,6 +157,9 @@ function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u
 /* column classifier (priority order; budget/mandays before labour-engagement) */
 function classify(h){
  h=up(h); if(!h) return null;
+ // column1, column2, unnamed_0 etc. ignore karo
+ if(/^COLUMN\d*$/i.test(h)) return null;
+ if(/^UNNAMED/i.test(h)) return null;
  if(h.includes("BUDGET")) return "budget";
  if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
  if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
@@ -220,17 +225,34 @@ function compute(d){
  return {k:metrics(d),blocks,engCount:new Set(d.map(r=>r.engineer)).size};
 }
 
-/* ---------- metric chips ---------- */
+/* ---------- metric chips (clickable WIP / Dys) ---------- */
 function metricChips(m,scope){
  let h=`<span class="m blue">कुल पंचायतें <b>${m.total}</b></span>`;
- h+=`<span class="m ok">सक्रिय (WIP) <b>${m.wip}</b></span>`;
- h+=`<span class="m warn">Dysfunctional <b>${m.dys}</b></span>`;
+ const wipCls="m ok filter-chip"+(activeFilter==="wip"?" active":"");
+ const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
+ h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
+ h+=`<span class="${dysCls}" data-filter="dys">Dysfunctional <b>${m.dys}</b></span>`;
  h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(scope==="top"){ if(FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`; }
  return h;
 }
+
+/* ---------- filter bar ---------- */
+function updateFilterBar(){
+ const bar=document.getElementById("filterBar");
+ const lbl=document.getElementById("filterLabel");
+ if(!activeFilter){bar.classList.remove("show");return;}
+ bar.classList.add("show");
+ lbl.textContent=activeFilter==="wip"?"🔍 फ़िल्टर: सक्रिय पंचायतें (Works in Progress > 0)":"🔍 फ़िल्टर: Dysfunctional पंचायतें (Works in Progress = 0)";
+}
+function setFilter(f){
+ if(activeFilter===f){activeFilter=null;}else{activeFilter=f;}
+ updateFilterBar();
+ renderBlocks(document.getElementById("search").value,false);
+}
+function clearFilter(){activeFilter=null;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
 
 /* ---------- table columns ---------- */
 function visCols(){
@@ -256,7 +278,7 @@ function panchRow(r,i){
 function tableHTML(rows){
  const vc=visCols();
  const head=`<tr><th>#</th>`+vc.map(c=>`<th>${c.t}</th>`).join("")+`</tr>`;
- const body=rows.length?rows.map((r,i)=>panchRow(r,i+1)).join(""):`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="muted">कोई पंचायत नहीं</td></tr>`;
+ const body=rows.length?rows.map((r,i)=>panchRow(r,i+1)).join(""):`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="mc">कोई पंचायत नहीं</td></tr>`;
  return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
@@ -264,7 +286,7 @@ function tableHTML(rows){
 function renderKPI(k,engCount){
  const d=[["कुल पंचायतें",k.total,""],["सक्रिय (Works in Progress)",k.wip,"green"],
   ["Dysfunctional पंचायतें",k.dys,"red"],["अपेक्षित श्रम (Max Labour)",k.labour,"yellow"],
-  ["कुल ब्लॉक",BLOCKS.length,""],["कुल उपयंत्री",engCount,"teal"]];
+  ["कुल विकासखण्ड",BLOCKS.length,""],["कुल उपयंत्री",engCount,"teal"]];
  if(FLAGS.mandays)d.push(["कुल मानव‑दिवस",k.mandays,""]);
  if(FLAGS.budget)d.push(["कुल श्रम बजट",k.budget,""]);
  if(FLAGS.mr)d.push(["कुल Muster Rolls",k.mr,""]);
@@ -299,23 +321,27 @@ function buildEngChart(b){
    scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
 }
 
-/* ---------- blocks accordion ---------- */
+/* ---------- विकासखण्ड accordion ---------- */
 function renderBlocks(filter,forceExpand){
  const q=(filter||"").trim().toLowerCase();
  const wrap=document.getElementById("blocks");
  let html="";
  BLOCKS.forEach(b=>{
-  // engineer panels (table rows filtered, header metrics full)
   let engHTML="";let blockHasMatch=false;
   b.engs.forEach(e=>{
-   const frows=q?e.rows.filter(r=>matchRow(r,q)):e.rows;
-   if(q&&frows.length===0)return;
+   // पहले search filter, फिर status filter
+   let frows=q?e.rows.filter(r=>matchRow(r,q)):[...e.rows];
+   if(activeFilter==="wip") frows=frows.filter(r=>r.wip>0);
+   if(activeFilter==="dys") frows=frows.filter(r=>r.wip===0);
+   if(frows.length===0)return;
    blockHasMatch=true;
    engHTML+=`<div class="eng">
      <div class="eng-head"><span class="en">👷 ${e.engineer}</span>${e.sector?`<span class="sec">• सेक्टर: ${e.sector}</span>`:""}
       <span class="eng-metrics">${metricChips(e.m,"eng")}</span></div>
      ${tableHTML(frows)}</div>`;});
   if(q&&!blockHasMatch)return;
+  // status filter ke bina koi engineer match na kare to block hide
+  if(!q&&activeFilter&&!blockHasMatch)return;
   const open=forceExpand||expanded.has(b.block);
   html+=`<div class="block ${open?'open':''}" data-block="${b.block}">
    <div class="block-head" data-toggle="${b.block}">
@@ -327,9 +353,8 @@ function renderBlocks(filter,forceExpand){
     <div class="eng-ch-wrap"><h4 style="margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:500">उपयंत्री‑वार चार्ट — ${b.block}</h4><div class="ch"><canvas id="chEng_${san(b.block)}"></canvas></div></div>
     ${engHTML}
    </div></div>`;});
- if(!html)html=`<div class="muted" style="padding:20px;text-align:center">कोई ब्लॉक मेल नहीं खाया</div>`;
+ if(!html)html=`<div class="mc" style="padding:20px;text-align:center">कोई विकासखण्ड मेल नहीं खाया</div>`;
  wrap.innerHTML=html;
- // build charts for open blocks
  BLOCKS.forEach(b=>{if((forceExpand||expanded.has(b.block)))buildEngChart(b);});
 }
 function matchRow(r,q){return r.panchayat.toLowerCase().includes(q)||r.engineer.toLowerCase().includes(q)||r.block.toLowerCase().includes(q)||(r.sector||"").toLowerCase().includes(q);}
@@ -339,7 +364,7 @@ function stamp(){
  const t=new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
  document.getElementById("updTime").textContent=t;
  document.getElementById("updChip").textContent="🔄 अपडेट: "+t;
- document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" ब्लॉक लोड";
+ document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" विकासखण्ड लोड";
  try{localStorage.setItem(LS_UPD,t);}catch(e){}
 }
 
@@ -350,31 +375,36 @@ function renderAll(d){
 }
 
 /* ---------- events ---------- */
+// विकासखण्ड toggle
 document.getElementById("blocks").addEventListener("click",e=>{
+ // filter chip click check karo pehle
+ const chip=e.target.closest(".filter-chip");
+ if(chip){e.stopPropagation();setFilter(chip.dataset.filter);return;}
  const h=e.target.closest("[data-toggle]");if(!h)return;
  const b=h.dataset.toggle;
  if(expanded.has(b))expanded.delete(b);else expanded.add(b);
  renderBlocks(document.getElementById("search").value,false);});
+
+// search
 let db;document.getElementById("search").addEventListener("input",e=>{clearTimeout(db);const v=e.target.value;
  db=setTimeout(()=>renderBlocks(v,v.trim()!==""),180);});
+
+// expand / collapse
 document.getElementById("expandAll").addEventListener("click",()=>{BLOCKS.forEach(b=>expanded.add(b.block));renderBlocks(document.getElementById("search").value,false);});
 document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();renderBlocks(document.getElementById("search").value,false);});
 
+// filter bar clear
+document.getElementById("clearFilter").addEventListener("click",clearFilter);
+
 /* ---------- load ---------- */
-function setStatus(t){document.getElementById("loadStatus").textContent=t;}
-function applyAndStore(t){try{const n=normalize(t);if(!n.length)throw new Error("कोई वैध पंक्ति नहीं — JSON format जाँचें");
-  renderAll(n);try{localStorage.setItem(STORE,JSON.stringify(n));}catch(e){}setStatus("✅ "+n.length+" पंचायतें");}
-  catch(e){setStatus("❌ "+e.message);document.getElementById("loadNote").textContent="⚠️ parse त्रुटि: "+e.message;}}
 async function autoLoad(){
  const urls=[`https://raw.githubusercontent.com/mgnregakatni2025/${REPO_PRIMARY}/main/${FNAME}`,
   `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_PRIMARY}/master/${FNAME}`,
   `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_FALLBACK}/main/${FNAME}`,
   `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_FALLBACK}/master/${FNAME}`];
- for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){applyAndStore(await r.text());return true;}}catch(e){}}
+ for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const n=normalize(await r.text());if(!n.length)continue;renderAll(n);try{localStorage.setItem(STORE,JSON.stringify(n));}catch(e){}return true;}}catch(e){}}
  return false;
 }
-document.getElementById("loadPaste").onclick=()=>{const t=document.getElementById("pasteArea").value.trim();if(!t){setStatus("⚠️ पहले JSON पेस्ट करें");return;}applyAndStore(t);};
-document.getElementById("loadGh").onclick=async()=>{setStatus("⏳ लोड…");try{const r=await fetch(document.getElementById("ghUrl").value.trim(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);applyAndStore(await r.text());}catch(e){setStatus("❌ "+e.message);}};
 
 /* ---------- init ---------- */
 (async function(){
@@ -382,7 +412,7 @@ document.getElementById("loadGh").onclick=async()=>{setStatus("⏳ लोड…"
  const saved=localStorage.getItem(STORE);
  if(saved){try{renderAll(JSON.parse(saved));}catch(e){}}
  const ok=await autoLoad();
- if(!ok&&!saved)document.getElementById("loadNote").innerHTML="⚠️ GitHub से डेटा नहीं मिला — repo/branch जाँचें या नीचे मैन्युअल लोड करें";
+ if(!ok&&!saved)document.getElementById("loadNote").innerHTML="⚠️ GitHub से डेटा नहीं मिला — repo/branch जाँचें";
 })();
 </script>
 </body>
