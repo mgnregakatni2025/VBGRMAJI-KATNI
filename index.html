@@ -1,0 +1,712 @@
+बहुत बढ़िया! आपकी सभी जरूरतों को ध्यान में रखते हुए मैंने एक पूरा **3-स्तरीय (District → Block → Engineer → Panchayat)** Dashboard बनाया है, जो **Google Material Design Theme** पर आधारित है और पूरी तरह Mobile Responsive है।
+
+## ✅ इस Dashboard में क्या-क्या है
+
+| # | Feature |
+|---|---|
+| 1 | मुख्य हेडिंग: "मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला कटनी" |
+| 2 | ब्लॉक-वार Rows: कुल पंचायतें, Work in Progress, Dysfunctional, Max Expected Labour, MANDAYS, Labour Budget |
+| 3 | ब्लॉक-वार Bar Chart |
+| 4 | ब्लॉक Row क्लिक → Expand होकर उपयंत्री-वार डेटा + पंचायत Table |
+| 5 | उपयंत्री-वार अलग Chart (हर ब्लॉक के अंदर) |
+| 6 | Footer में रोज का Date/Time (Live Clock) |
+| 7 | Google Material Design थीम (Blue/Red/Yellow/Green, Roboto Font) |
+
+---
+
+## 📄 पूरा Dashboard कोड (dashboard.html)
+
+```html
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>मनरेगा डैशबोर्ड - जिला कटनी</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+    --g-blue: #4285F4;
+    --g-red: #EA4335;
+    --g-yellow: #FBBC04;
+    --g-green: #34A853;
+    --g-blue-dark: #1a56c4;
+    --bg: #f1f3f4;
+    --card-bg: #ffffff;
+    --text-dark: #202124;
+    --text-gray: #5f6368;
+    --border: #e0e0e0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+}
+
+/* ===== Header ===== */
+header {
+    background: linear-gradient(90deg, var(--g-blue) 0%, var(--g-blue-dark) 100%);
+    color: white;
+    padding: 22px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+header .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+header h2 {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.95;
+    margin-top: 4px;
+}
+header .dots {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-top: 8px;
+}
+header .dots span { width: 8px; height: 8px; border-radius: 50%; }
+header .dots span:nth-child(1) { background: var(--g-red); }
+header .dots span:nth-child(2) { background: var(--g-yellow); }
+header .dots span:nth-child(3) { background: var(--g-green); }
+header .dots span:nth-child(4) { background: #fff; }
+
+.container { max-width: 1300px; margin: 0 auto; padding: 16px; }
+
+/* ===== Summary Cards ===== */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.3);
+    border-bottom: 4px solid var(--g-blue);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(60,64,67,0.25); }
+.stat-card h3 { font-size: 26px; font-weight: 700; color: var(--g-blue); }
+.stat-card p { font-size: 12px; color: var(--text-gray); margin-top: 6px; }
+.stat-card.red { border-bottom-color: var(--g-red); }
+.stat-card.red h3 { color: var(--g-red); }
+.stat-card.green { border-bottom-color: var(--g-green); }
+.stat-card.green h3 { color: var(--g-green); }
+.stat-card.yellow { border-bottom-color: var(--g-yellow); }
+.stat-card.yellow h3 { color: #b8860b; }
+
+/* ===== Section Card ===== */
+.section-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.3);
+}
+.section-card h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-card h3::before {
+    content: '';
+    width: 5px;
+    height: 18px;
+    background: var(--g-blue);
+    border-radius: 3px;
+    display: inline-block;
+}
+canvas { max-width: 100%; }
+
+/* ===== Search ===== */
+.search-row { margin-bottom: 16px; }
+.search-row input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.search-row input:focus { border-color: var(--g-blue); }
+
+/* ===== Block Accordion ===== */
+.block-item {
+    background: var(--card-bg);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(60,64,67,0.15);
+    overflow: hidden;
+    border-left: 5px solid var(--g-blue);
+}
+.block-header {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+}
+.block-header:hover { background: #f8f9fa; }
+.block-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--g-blue-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+.block-title .arrow { transition: transform 0.2s; font-size: 12px; color: var(--text-gray); }
+.block-header.open .arrow { transform: rotate(90deg); }
+
+.mini-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.mini-stat {
+    background: #f1f3f4;
+    padding: 5px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+.mini-stat b { color: var(--g-blue); }
+.mini-stat.dys b { color: var(--g-red); }
+.mini-stat.prog b { color: var(--g-green); }
+.mini-stat.budget b { color: #b8860b; }
+
+.block-body { display: none; padding: 16px; background: #fafbfc; border-top: 1px solid var(--border); }
+.block-body.open { display: block; }
+
+/* ===== Engineer Accordion (nested) ===== */
+.engg-item {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--g-green);
+    overflow: hidden;
+}
+.engg-header {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+.engg-header:hover { background: #f8f9fa; }
+.engg-title { font-size: 13px; font-weight: 700; color: var(--g-green); display:flex; align-items:center; gap:6px; }
+.engg-title .arrow { font-size: 11px; transition: transform 0.2s; color: var(--text-gray); }
+.engg-header.open .arrow { transform: rotate(90deg); }
+.engg-body { display: none; padding: 12px; overflow-x: auto; border-top: 1px solid var(--border); }
+.engg-body.open { display: block; }
+
+/* ===== Table ===== */
+table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; }
+th, td { padding: 7px 9px; text-align: center; border-bottom: 1px solid #eee; white-space: nowrap; }
+th { background: #e8f0fe; color: var(--g-blue-dark); font-weight: 500; position: sticky; top: 0; }
+td.p-name { text-align: left; font-weight: 500; }
+tr.row-dys { background: #fce8e6 !important; }
+tr.row-prog { background: #e6f4ea !important; }
+tr:hover { background: #f1f3f4; }
+
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    padding: 20px 16px;
+    color: var(--text-gray);
+    font-size: 12px;
+    background: white;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+}
+footer .clock { font-size: 13px; font-weight: 700; color: var(--g-blue); margin-top: 4px; }
+
+.loading { text-align:center; padding:60px 20px; font-size:15px; color:var(--text-gray); white-space:pre-wrap; }
+
+@media (max-width: 700px) {
+    header h1 { font-size: 16px; }
+    header h2 { font-size: 12px; }
+    .stat-card h3 { font-size: 20px; }
+    .block-title { font-size: 13px; }
+    th, td { font-size: 11px; padding: 6px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo-row">
+        <h1>🏛️ कार्यालय मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला पंचायत कटनी (म.प्र.)</h1>
+    </div>
+    <h2>महात्मा गांधी नरेगा — ब्लॉक-वार / उपयंत्री-वार प्रगति डैशबोर्ड</h2>
+    <div class="dots"><span></span><span></span><span></span><span></span></div>
+</header>
+
+<div class="container">
+    <div id="loadingMsg" class="loading">⏳ डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...</div>
+
+    <div id="dashboardContent" style="display:none;">
+
+        <!-- District Level Summary -->
+        <div class="summary-grid" id="districtSummary"></div>
+
+        <!-- Block-wise Chart -->
+        <div class="section-card">
+            <h3>ब्लॉक-वार तुलनात्मक चार्ट</h3>
+            <canvas id="blockChart" height="90"></canvas>
+        </div>
+
+        <!-- Search -->
+        <div class="search-row">
+            <input type="text" id="searchInput" placeholder="🔍 ब्लॉक / उपयंत्री / पंचायत खोजें...">
+        </div>
+
+        <!-- Block Accordion -->
+        <div class="section-card">
+            <h3>ब्लॉक-वार विवरण (क्लिक करके देखें)</h3>
+            <div id="blockList"></div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <div>Auto-generated Dashboard | Data Source: GitHub Repository</div>
+    <div id="fetchTime">डेटा फेच समय: --</div>
+    <div class="clock" id="liveClock">--:--:--</div>
+</footer>
+
+<script>
+const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/main/data.json";
+
+let headers = [];
+let COL = {};
+let rawData = [];
+let blockChartInstance = null;
+const enggChartInstances = {};
+
+// ---------------- Live Clock ----------------
+function updateClock() {
+    document.getElementById('liveClock').innerText =
+        new Date().toLocaleString('hi-IN', { dateStyle: 'full', timeStyle: 'medium' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ---------------- Fetch Data ----------------
+fetch(DATA_URL + "?t=" + new Date().getTime())
+    .then(res => res.json())
+    .then(json => processData(json))
+    .catch(err => showError("❌ डेटा लोड करने में त्रुटि: " + err));
+
+function showError(msg) {
+    document.getElementById('loadingMsg').style.display = 'block';
+    document.getElementById('loadingMsg').innerText = msg;
+}
+
+function toNum(v) { let n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+function findCol(...keywords) {
+    for (let i = 0; i < headers.length; i++) {
+        let h = (headers[i] || "").toString().toLowerCase();
+        if (keywords.some(k => h.includes(k.toLowerCase()))) return i;
+    }
+    return -1;
+}
+
+function processData(json) {
+    console.log("📦 पूरा JSON:", json);
+    if (!json || json.length < 2) { showError("डेटा उपलब्ध नहीं है।"); return; }
+
+    headers = json[0];
+
+    COL.sno = findCol("sno");
+    COL.panchayat = findCol("panchayat");
+    COL.totalGP = findCol("total no. of gram");
+    COL.gpWorks = findCol("with works", "works in progress");
+    COL.maxLabour = findCol("maximum expected");
+    COL.ongoingMR = findCol("ongoing works");
+    COL.noKYC = findCol("without e-kyc", "e-kyc");
+    COL.musterRolls = findCol("no. of muster rolls");
+    COL.block = findCol("block");
+    COL.engg = findCol("engg");
+    COL.sector = findCol("sector", "secotr");
+    COL.mandays = findCol("manday");
+    COL.labourBudget = findCol("labour_budget", "budget");
+
+    console.log("🔗 Column mapping:", COL);
+
+    rawData = json.slice(1).filter(row => {
+        let block = (row[COL.block] || "").toString().trim();
+        let panchayat = (row[COL.panchayat] || "").toString().trim();
+        if (block === "" || panchayat === "") return false;
+        if (panchayat.toLowerCase() === "total") return false;
+        return true;
+    }).map(row => ({
+        sno: row[COL.sno],
+        panchayat: (row[COL.panchayat] || "").toString().trim(),
+        totalGP: toNum(row[COL.totalGP]),
+        gpWorks: toNum(row[COL.gpWorks]),
+        maxLabour: toNum(row[COL.maxLabour]),
+        ongoingMR: toNum(row[COL.ongoingMR]),
+        noKYC: toNum(row[COL.noKYC]),
+        musterRolls: toNum(row[COL.musterRolls]),
+        block: (row[COL.block] || "अज्ञात").toString().trim(),
+        engg: (row[COL.engg] || "अज्ञात").toString().trim(),
+        sector: (row[COL.sector] || "-").toString().trim(),
+        mandays: toNum(row[COL.mandays]),
+        labourBudget: toNum(row[COL.labourBudget])
+    }));
+
+    console.log("✅ साफ किया हुआ rawData:", rawData);
+
+    if (rawData.length === 0) { showError("⚠️ कोई डेटा row नहीं मिली। Console चेक करें।"); return; }
+
+    document.getElementById('fetchTime').innerText =
+        "डेटा फेच समय: " + new Date().toLocaleString('hi-IN');
+
+    renderDashboard();
+}
+
+function aggregate(rows) {
+    return {
+        count: rows.length,
+        totalGP: rows.reduce((s, r) => s + r.totalGP, 0),
+        withWorks: rows.filter(r => r.gpWorks > 0).length,
+        dysfunctional: rows.filter(r => r.gpWorks === 0).length,
+        maxLabour: rows.reduce((s, r) => s + r.maxLabour, 0),
+        mandays: rows.reduce((s, r) => s + r.mandays, 0),
+        labourBudget: rows.reduce((s, r) => s + r.labourBudget, 0),
+        ongoingMR: rows.reduce((s, r) => s + r.ongoingMR, 0),
+        noKYC: rows.reduce((s, r) => s + r.noKYC, 0),
+        musterRolls: rows.reduce((s, r) => s + r.musterRolls, 0)
+    };
+}
+
+function fmt(n) {
+    return n.toLocaleString('en-IN');
+}
+
+function renderDashboard() {
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+
+    // ---------- District Summary ----------
+    const districtAgg = aggregate(rawData);
+    document.getElementById('districtSummary').innerHTML = `
+        <div class="stat-card"><h3>${fmt(districtAgg.count)}</h3><p>कुल पंचायतें</p></div>
+        <div class="stat-card green"><h3>${fmt(districtAgg.withWorks)}</h3><p>✅ काम चालू (Work in Progress)</p></div>
+        <div class="stat-card red"><h3>${fmt(districtAgg.dysfunctional)}</h3><p>⚠️ Dysfunctional पंचायतें</p></div>
+        <div class="stat-card"><h3>${fmt(districtAgg.maxLabour)}</h3><p>Max Expected Labour Engagement</p></div>
+        <div class="stat-card yellow"><h3>${fmt(districtAgg.mandays)}</h3><p>कुल MANDAYS</p></div>
+        <div class="stat-card yellow"><h3>₹${fmt(districtAgg.labourBudget)}</h3><p>Labour Budget</p></div>
+    `;
+
+    // ---------- Group by Block ----------
+    let blockMap = {};
+    rawData.forEach(r => {
+        if (!blockMap[r.block]) blockMap[r.block] = [];
+        blockMap[r.block].push(r);
+    });
+
+    // ---------- Block-wise Chart ----------
+    renderBlockChart(blockMap);
+
+    // ---------- Block Accordion ----------
+    renderBlockList(blockMap);
+
+    // ---------- Search ----------
+    document.getElementById('searchInput').addEventListener('input', applyFilter);
+}
+
+function renderBlockChart(blockMap) {
+    let labels = Object.keys(blockMap).sort();
+    let maxLabourData = labels.map(b => aggregate(blockMap[b]).maxLabour);
+    let mandaysData = labels.map(b => aggregate(blockMap[b]).mandays);
+
+    if (blockChartInstance) blockChartInstance.destroy();
+    blockChartInstance = new Chart(document.getElementById('blockChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Max Expected Labour', data: maxLabourData, backgroundColor: '#4285F4', borderRadius: 4 },
+                { label: 'MANDAYS', data: mandaysData, backgroundColor: '#34A853', borderRadius: 4 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderBlockList(blockMap) {
+    const container = document.getElementById('blockList');
+    container.innerHTML = '';
+
+    Object.keys(blockMap).sort().forEach((blockName, bIdx) => {
+        const blockRows = blockMap[blockName];
+        const agg = aggregate(blockRows);
+
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'block-item';
+        blockDiv.setAttribute('data-block', blockName.toLowerCase());
+
+        blockDiv.innerHTML = `
+            <div class="block-header" onclick="toggleBlock(${bIdx})">
+                <div class="block-title"><span class="arrow">▶</span> 📍 ${blockName}</div>
+                <div class="mini-stats">
+                    <span class="mini-stat">कुल: <b>${agg.count}</b></span>
+                    <span class="mini-stat prog">✅ चालू: <b>${agg.withWorks}</b></span>
+                    <span class="mini-stat dys">⚠️ बंद: <b>${agg.dysfunctional}</b></span>
+                    <span class="mini-stat">Labour: <b>${fmt(agg.maxLabour)}</b></span>
+                    <span class="mini-stat">Mandays: <b>${fmt(agg.mandays)}</b></span>
+                    <span class="mini-stat budget">Budget: <b>₹${fmt(agg.labourBudget)}</b></span>
+                </div>
+            </div>
+            <div class="block-body" id="block-body-${bIdx}">
+                <div class="summary-grid" style="margin-bottom:14px;">
+                    <div class="stat-card"><h3>${agg.count}</h3><p>कुल पंचायतें</p></div>
+                    <div class="stat-card green"><h3>${agg.withWorks}</h3><p>✅ काम चालू</p></div>
+                    <div class="stat-card red"><h3>${agg.dysfunctional}</h3><p>⚠️ Dysfunctional</p></div>
+                    <div class="stat-card"><h3>${fmt(agg.maxLabour)}</h3><p>Max Expected Labour</p></div>
+                    <div class="stat-card yellow"><h3>${fmt(agg.mandays)}</h3><p>MANDAYS</p></div>
+                    <div class="stat-card yellow"><h3>₹${fmt(agg.labourBudget)}</h3><p>Labour Budget</p></div>
+                </div>
+                <h3 style="font-size:14px; margin-bottom:10px; color:#5f6368;">👷 उपयंत्री-वार चार्ट (${blockName})</h3>
+                <canvas id="engg-chart-${bIdx}" height="80"></canvas>
+                <h3 style="font-size:14px; margin:16px 0 10px; color:#5f6368;">उपयंत्री-वार विवरण</h3>
+                <div id="engg-list-${bIdx}"></div>
+            </div>
+        `;
+        container.appendChild(blockDiv);
+    });
+
+    // Store blockMap globally for lazy chart/engineer rendering on expand
+    window.__blockMap = blockMap;
+}
+
+function toggleBlock(bIdx) {
+    const header = document.querySelectorAll('.block-header')[bIdx];
+    const body = document.getElementById('block-body-' + bIdx);
+    const isOpening = !body.classList.contains('open');
+
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+
+    if (isOpening && !body.dataset.rendered) {
+        const blockName = Object.keys(window.__blockMap).sort()[bIdx];
+        const blockRows = window.__blockMap[blockName];
+        renderEnggChart(bIdx, blockRows);
+        renderEnggList(bIdx, blockRows);
+        body.dataset.rendered = "true";
+    }
+}
+
+function renderEnggChart(bIdx, blockRows) {
+    let enggMap = {};
+    blockRows.forEach(r => {
+        if (!enggMap[r.engg]) enggMap[r.engg] = [];
+        enggMap[r.engg].push(r);
+    });
+
+    let labels = Object.keys(enggMap).sort();
+    let maxLabourData = labels.map(e => aggregate(enggMap[e]).maxLabour);
+    let mandaysData = labels.map(e => aggregate(enggMap[e]).mandays);
+
+    const ctx = document.getElementById('engg-chart-' + bIdx);
+    if (enggChartInstances[bIdx]) enggChartInstances[bIdx].destroy();
+    enggChartInstances[bIdx] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Max Expected Labour', data: maxLabourData, backgroundColor: '#EA4335', borderRadius: 4 },
+                { label: 'MANDAYS', data: mandaysData, backgroundColor: '#FBBC04', borderRadius: 4 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderEnggList(bIdx, blockRows) {
+    let enggMap = {};
+    blockRows.forEach(r => {
+        if (!enggMap[r.engg]) enggMap[r.engg] = [];
+        enggMap[r.engg].push(r);
+    });
+
+    const container = document.getElementById('engg-list-' + bIdx);
+    container.innerHTML = '';
+
+    Object.keys(enggMap).sort().forEach((enggName, eIdx) => {
+        const rows = enggMap[enggName];
+        const agg = aggregate(rows);
+        const uid = bIdx + '-' + eIdx;
+
+        const enggDiv = document.createElement('div');
+        enggDiv.className = 'engg-item';
+        enggDiv.setAttribute('data-engg', enggName.toLowerCase());
+
+        const tableRows = rows.map(r => {
+            const rowClass = r.gpWorks > 0 ? 'row-prog' : 'row-dys';
+            return `<tr class="${rowClass}" data-panchayat="${r.panchayat.toLowerCase()}">
+                <td class="p-name">${r.panchayat}</td>
+                <td>${r.sector}</td>
+                <td>${r.gpWorks > 0 ? '✅ चालू' : '⚠️ बंद'}</td>
+                <td>${fmt(r.maxLabour)}</td>
+                <td>${fmt(r.ongoingMR)}</td>
+                <td>${fmt(r.noKYC)}</td>
+                <td>${fmt(r.musterRolls)}</td>
+                <td>${fmt(r.mandays)}</td>
+                <td>₹${fmt(r.labourBudget)}</td>
+            </tr>`;
+        }).join('');
+
+        enggDiv.innerHTML = `
+            <div class="engg-header" onclick="toggleEngg('${uid}')">
+                <div class="engg-title"><span class="arrow">▶</span> 👷 ${enggName}</div>
+                <div class="mini-stats">
+                    <span class="mini-stat">कुल: <b>${agg.count}</b></span>
+                    <span class="mini-stat prog">✅ <b>${agg.withWorks}</b></span>
+                    <span class="mini-stat dys">⚠️ <b>${agg.dysfunctional}</b></span>
+                    <span class="mini-stat">Labour: <b>${fmt(agg.maxLabour)}</b></span>
+                    <span class="mini-stat">Mandays: <b>${fmt(agg.mandays)}</b></span>
+                    <span class="mini-stat budget">₹<b>${fmt(agg.labourBudget)}</b></span>
+                </div>
+            </div>
+            <div class="engg-body" id="engg-body-${uid}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>पंचायत</th><th>सेक्टर</th><th>स्थिति</th><th>Max Expected Labour</th>
+                            <th>Ongoing MR Works</th><th>No e-KYC</th><th>Muster Rolls</th>
+                            <th>Mandays</th><th>Labour Budget</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+            </div>
+        `;
+        container.appendChild(enggDiv);
+    });
+}
+
+function toggleEngg(uid) {
+    const body = document.getElementById('engg-body-' + uid);
+    const header = body.previousElementSibling;
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+}
+
+function applyFilter() {
+    const val = document.getElementById('searchInput').value.toLowerCase();
+
+    document.querySelectorAll('.block-item').forEach(blockEl => {
+        const blockName = blockEl.getAttribute('data-block');
+        let blockMatches = blockName.includes(val);
+
+        // Also check nested engg/panchayat matches (if body already rendered)
+        let anyChildMatch = false;
+        blockEl.querySelectorAll('.engg-item').forEach(enggEl => {
+            const enggName = enggEl.getAttribute('data-engg');
+            let enggMatch = enggName.includes(val);
+            let anyRowMatch = false;
+            enggEl.querySelectorAll('tbody tr').forEach(tr => {
+                const pname = tr.getAttribute('data-panchayat');
+                const match = pname.includes(val);
+                tr.style.display = (val === '' || match || enggMatch || blockMatches) ? '' : 'none';
+                if (match) anyRowMatch = true;
+            });
+            const showEngg = val === '' || enggMatch || anyRowMatch || blockMatches;
+            enggEl.style.display = showEngg ? '' : 'none';
+            if (showEngg && val !== '') anyChildMatch = true;
+        });
+
+        blockEl.style.display = (val === '' || blockMatches || anyChildMatch) ? '' : 'none';
+
+        // Auto-expand if searching and match found in children
+        if (val !== '' && anyChildMatch) {
+            const body = blockEl.querySelector('.block-body');
+            const header = blockEl.querySelector('.block-header');
+            if (!body.classList.contains('open')) {
+                const bIdx = Array.from(document.querySelectorAll('.block-item')).indexOf(blockEl);
+                toggleBlock(bIdx);
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
+```
+
+---
+
+## 📝 इस्तेमाल करने के स्टेप
+
+1. इस पूरे कोड को `dashboard.html` फाइल में सेव करें
+2. `DATA_URL` वाली लाइन में अपनी सही Repository का Raw URL डालें:
+   ```js
+   const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/main/data.json";
+   ```
+3. GitHub Repository में Upload करें
+4. GitHub Pages से खोलें, या सीधे लोकल ब्राउज़र में टेस्ट करें
+
+---
+
+## 🎯 काम कैसे करता है (Logic समझें)
+
+| Level | विवरण |
+|---|---|
+| **District Level** | सबसे ऊपर पूरे जिले का Summary + Block-wise Chart |
+| **Block Level** | हर Block एक Row/Card है — क्लिक करने पर Expand होता है |
+| **Block Expand** करने पर | Block के अंदर: Summary Cards + उपयंत्री-वार Chart + उपयंत्री की List |
+| **Engineer Level** | हर उपयंत्री का नाम क्लिक करने पर उसकी सभी पंचायतों की पूरी Table खुलती है |
+| **Search** | ब्लॉक, उपयंत्री, या पंचायत नाम से खोजने पर संबंधित Section अपने आप Expand हो जाता है |
+| **Footer** | Live Clock (हर सेकंड Update) + डेटा Fetch होने का समय |
+
+---
+
+## ⚠️ ध्यान दें
+
+चूंकि आपका डेटा structure में कुछ **Junk/Header जैसी Rows** भी हैं (जैसे `["","2","3","4","5","6","7","8","","","","",""]` और `["","Total","66",...]`), मैंने Filter Logic में यह Rows अपने आप हटा दी हैं (जहां **BLOCK column खाली** है)।
+
+अगर Load करने के बाद कोई Data गायब दिखे या Column सही न बैठे तो **F12 → Console** में जाकर देखें:
+- `🔗 Column mapping:` में कोई Column `-1` तो नहीं दिखा रहा
+- `✅ साफ किया हुआ rawData:` में सही Data आ रहा है या नहीं
+
+वह Log यहां भेज दें, मैं तुरंत Fix कर दूंगा! 🚀
