@@ -118,6 +118,17 @@
  </div>
  <div id="blocks"></div>
 
+ <details class="manual">
+  <summary>🛠️ मैन्युअल डेटा लोड (यदि auto‑load न चले)</summary>
+  <div class="row">
+   <input type="text" id="ghUrl" value="https://raw.githubusercontent.com/mgnregakatni2025/VBGRAMJI/main/data.json">
+   <button class="gbtn primary" id="loadGh">GitHub से लोड करें</button>
+  </div>
+  <textarea id="pasteArea" placeholder="या यहाँ JSON पेस्ट करें…"></textarea>
+  <div class="row"><button class="gbtn primary" id="loadPaste">पेस्ट लागू करें</button><span class="muted" id="loadStatus"></span></div>
+ </details>
+</div>
+
 <footer>
  <div>📅 <span class="ft-upd">अंतिम डेटा अपडेट: <span id="updTime">—</span></span></div>
  <div style="margin-top:4px">जिला पंचायत कटनी • MGNREGA पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
