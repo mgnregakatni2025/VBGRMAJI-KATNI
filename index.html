@@ -3,654 +3,387 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>मनरेगा डैशबोर्ड - जिला कटनी</title>
+<title>ब्लॉक‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root {
-    --g-blue: #4285F4;
-    --g-red: #EA4335;
-    --g-yellow: #FBBC04;
-    --g-green: #34A853;
-    --g-blue-dark: #1a56c4;
-    --bg: #f1f3f4;
-    --card-bg: #ffffff;
-    --text-dark: #202124;
-    --text-gray: #5f6368;
-    --border: #e0e0e0;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text-dark);
-}
-
-/* ===== Header ===== */
-header {
-    background: linear-gradient(90deg, var(--g-blue) 0%, var(--g-blue-dark) 100%);
-    color: white;
-    padding: 22px 16px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-header .logo-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-header h1 {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.4;
-}
-header h2 {
-    font-size: 14px;
-    font-weight: 400;
-    opacity: 0.95;
-    margin-top: 4px;
-}
-header .dots {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    margin-top: 8px;
-}
-header .dots span { width: 8px; height: 8px; border-radius: 50%; }
-header .dots span:nth-child(1) { background: var(--g-red); }
-header .dots span:nth-child(2) { background: var(--g-yellow); }
-header .dots span:nth-child(3) { background: var(--g-green); }
-header .dots span:nth-child(4) { background: #fff; }
-
-.container { max-width: 1300px; margin: 0 auto; padding: 16px; }
-
-/* ===== Summary Cards ===== */
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-}
-.stat-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.3);
-    border-bottom: 4px solid var(--g-blue);
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(60,64,67,0.25); }
-.stat-card h3 { font-size: 26px; font-weight: 700; color: var(--g-blue); }
-.stat-card p { font-size: 12px; color: var(--text-gray); margin-top: 6px; }
-.stat-card.red { border-bottom-color: var(--g-red); }
-.stat-card.red h3 { color: var(--g-red); }
-.stat-card.green { border-bottom-color: var(--g-green); }
-.stat-card.green h3 { color: var(--g-green); }
-.stat-card.yellow { border-bottom-color: var(--g-yellow); }
-.stat-card.yellow h3 { color: #b8860b; }
-
-/* ===== Section Card ===== */
-.section-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.3);
-}
-.section-card h3 {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-dark);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.section-card h3::before {
-    content: '';
-    width: 5px;
-    height: 18px;
-    background: var(--g-blue);
-    border-radius: 3px;
-    display: inline-block;
-}
-canvas { max-width: 100%; }
-
-/* ===== Search ===== */
-.search-row { margin-bottom: 16px; }
-.search-row input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    font-size: 14px;
-    outline: none;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-}
-.search-row input:focus { border-color: var(--g-blue); }
-
-/* ===== Block Accordion ===== */
-.block-item {
-    background: var(--card-bg);
-    border-radius: 10px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(60,64,67,0.15);
-    overflow: hidden;
-    border-left: 5px solid var(--g-blue);
-}
-.block-header {
-    padding: 14px 16px;
-    cursor: pointer;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.15s;
-}
-.block-header:hover { background: #f8f9fa; }
-.block-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--g-blue-dark);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 150px;
-}
-.block-title .arrow { transition: transform 0.2s; font-size: 12px; color: var(--text-gray); }
-.block-header.open .arrow { transform: rotate(90deg); }
-
-.mini-stats { display: flex; gap: 8px; flex-wrap: wrap; }
-.mini-stat {
-    background: #f1f3f4;
-    padding: 5px 10px;
-    border-radius: 14px;
-    font-size: 11px;
-    color: var(--text-dark);
-    white-space: nowrap;
-}
-.mini-stat b { color: var(--g-blue); }
-.mini-stat.dys b { color: var(--g-red); }
-.mini-stat.prog b { color: var(--g-green); }
-.mini-stat.budget b { color: #b8860b; }
-
-.block-body { display: none; padding: 16px; background: #fafbfc; border-top: 1px solid var(--border); }
-.block-body.open { display: block; }
-
-/* ===== Engineer Accordion (nested) ===== */
-.engg-item {
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-    border-left: 4px solid var(--g-green);
-    overflow: hidden;
-}
-.engg-header {
-    padding: 10px 14px;
-    cursor: pointer;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-.engg-header:hover { background: #f8f9fa; }
-.engg-title { font-size: 13px; font-weight: 700; color: var(--g-green); display:flex; align-items:center; gap:6px; }
-.engg-title .arrow { font-size: 11px; transition: transform 0.2s; color: var(--text-gray); }
-.engg-header.open .arrow { transform: rotate(90deg); }
-.engg-body { display: none; padding: 12px; overflow-x: auto; border-top: 1px solid var(--border); }
-.engg-body.open { display: block; }
-
-/* ===== Table ===== */
-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; }
-th, td { padding: 7px 9px; text-align: center; border-bottom: 1px solid #eee; white-space: nowrap; }
-th { background: #e8f0fe; color: var(--g-blue-dark); font-weight: 500; position: sticky; top: 0; }
-td.p-name { text-align: left; font-weight: 500; }
-tr.row-dys { background: #fce8e6 !important; }
-tr.row-prog { background: #e6f4ea !important; }
-tr:hover { background: #f1f3f4; }
-
-/* ===== Footer ===== */
-footer {
-    text-align: center;
-    padding: 20px 16px;
-    color: var(--text-gray);
-    font-size: 12px;
-    background: white;
-    border-top: 1px solid var(--border);
-    margin-top: 10px;
-}
-footer .clock { font-size: 13px; font-weight: 700; color: var(--g-blue); margin-top: 4px; }
-
-.loading { text-align:center; padding:60px 20px; font-size:15px; color:var(--text-gray); white-space:pre-wrap; }
-
-@media (max-width: 700px) {
-    header h1 { font-size: 16px; }
-    header h2 { font-size: 12px; }
-    .stat-card h3 { font-size: 20px; }
-    .block-title { font-size: 13px; }
-    th, td { font-size: 11px; padding: 6px; }
-}
+ :root{
+  --blue:#1a73e8; --green:#34a853; --red:#ea4335; --yellow:#fbbc04; --teal:#00897b;
+  --ink:#202124; --muted:#5f6368; --line:#dadce0; --bg:#f8f9fa; --card:#ffffff;
+  --shadow:0 1px 2px 0 rgba(60,64,67,.30),0 1px 3px 1px rgba(60,64,67,.15);
+  --shadow2:0 1px 3px 0 rgba(60,64,67,.30),0 4px 8px 3px rgba(60,64,67,.15);
+ }
+ *{box-sizing:border-box}
+ body{margin:0;font-family:"Roboto","Noto Sans Devanagari",system-ui,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+ .gbar{height:4px;background:linear-gradient(90deg,var(--blue) 0 25%,var(--red) 25% 50%,var(--yellow) 50% 75%,var(--green) 75% 100%)}
+ header.appbar{background:var(--card);box-shadow:var(--shadow);padding:14px clamp(12px,4vw,28px);position:sticky;top:0;z-index:50}
+ .appbar .row{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+ .appbar h1{margin:0;font-size:clamp(14px,3.6vw,20px);font-weight:700;color:var(--ink);line-height:1.3}
+ .appbar .sub{font-size:clamp(11px,2.6vw,13px);color:var(--muted);margin-top:2px;font-weight:500}
+ .updchip{background:#e8f0fe;color:#1967d2;font-size:11.5px;font-weight:500;padding:6px 12px;border-radius:16px;white-space:nowrap}
+ .wrap{max-width:1280px;margin:0 auto;padding:clamp(12px,3vw,22px)}
+ #loadNote{text-align:center;font-size:12.5px;color:var(--muted);margin:0 0 14px}
+ .kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px}
+ .kpi{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px;border-left:4px solid var(--blue)}
+ .kpi .v{font-size:clamp(20px,5.5vw,28px);font-weight:700;line-height:1;color:var(--ink)}
+ .kpi .l{font-size:11.5px;color:var(--muted);margin-top:7px;font-weight:500}
+ .kpi.green{border-left-color:var(--green)} .kpi.red{border-left-color:var(--red)}
+ .kpi.yellow{border-left-color:var(--yellow)} .kpi.teal{border-left-color:var(--teal)}
+ .stitle{font-size:clamp(15px,3.4vw,18px);font-weight:700;margin:24px 2px 12px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ .stitle .ic{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+ .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+ .toolbar input{flex:1 1 200px;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+ .toolbar input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,115,232,.2)}
+ .gbtn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:500;font-size:13px;padding:8px 14px;border-radius:8px;font-family:inherit}
+ .gbtn:hover{background:#f1f3f4}
+ .gbtn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+ .gbtn.primary:hover{background:#1765cc}
+ .charts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-bottom:8px}
+ .chart-card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px}
+ .chart-card h4{margin:0 0 10px;font-size:13.5px;color:var(--muted);font-weight:500}
+ .chart-card .ch{position:relative;height:300px}
+ /* block accordion */
+ .block{background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
+ .block-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s}
+ .block-head:hover{background:#f8f9fa}
+ .block.open .block-head{background:#e8f0fe}
+ .blk-name{font-weight:700;font-size:15px;color:var(--ink);min-width:120px;display:flex;align-items:center;gap:8px}
+ .chev{transition:transform .2s;color:var(--muted);font-size:13px}
+ .block.open .chev{transform:rotate(90deg);color:var(--blue)}
+ .blk-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+ .m{font-size:11.5px;background:#f1f3f4;border-radius:6px;padding:4px 9px;color:var(--muted);white-space:nowrap}
+ .m b{color:var(--ink);font-weight:700}
+ .m.warn{background:#fce8e6;color:#c5221f} .m.warn b{color:#c5221f}
+ .m.ok{background:#e6f4ea;color:#137333} .m.ok b{color:#137333}
+ .m.blue{background:#e8f0fe;color:#1967d2} .m.blue b{color:#1967d2}
+ .block-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+ .block.open .block-body{display:block}
+ .eng-ch-wrap{margin:14px 0}
+ .eng-ch-wrap .ch{position:relative;height:240px}
+ .eng{border:1px solid var(--line);border-radius:8px;margin-top:12px;overflow:hidden}
+ .eng-head{background:#f8f9fa;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+ .eng-head .en{font-weight:700;color:var(--blue);font-size:14px}
+ .eng-head .sec{font-size:11.5px;color:var(--muted)}
+ .eng-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+ .tw{overflow-x:auto}
+ table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:560px}
+ thead th{background:#f1f3f4;color:var(--muted);text-align:left;padding:9px 12px;font-weight:500;white-space:nowrap;border-bottom:1px solid var(--line)}
+ tbody td{padding:8px 12px;border-bottom:1px solid #f1f3f4}
+ tbody tr:hover{background:#f8f9fa}
+ tbody tr.dys{background:#fef7f6} tbody tr.dys td{color:#a50e0e}
+ .pill{display:inline-block;min-width:20px;text-align:center;padding:1px 8px;border-radius:10px;font-weight:700;font-size:11.5px}
+ .pill.g{background:#e6f4ea;color:#137333} .pill.r{background:#fce8e6;color:#c5221f}
+ .st{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px}
+ .st.a{background:#e6f4ea;color:#137333} .st.d{background:#fce8e6;color:#c5221f}
+ footer{background:var(--card);border-top:1px solid var(--line);margin-top:26px;padding:16px;text-align:center;color:var(--muted);font-size:12px}
+ footer .ft-upd{color:var(--ink);font-weight:500}
+ details.manual{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:6px 16px;margin-top:20px}
+ details.manual summary{cursor:pointer;font-weight:500;color:var(--blue);padding:10px 0}
+ .manual textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:monospace;font-size:12px;margin-top:8px}
+ .manual .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+ .manual input[type=text]{flex:1 1 240px;padding:8px;border:1px solid var(--line);border-radius:8px}
+ .muted{color:var(--muted)}
+ @media(max-width:560px){.blk-metrics{margin-left:0;width:100%}.blk-name{min-width:0}.chart-card .ch{height:240px}}
 </style>
 </head>
 <body>
-
-<header>
-    <div class="logo-row">
-        <h1>🏛️ कार्यालय मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला पंचायत कटनी (म.प्र.)</h1>
-    </div>
-    <h2>महात्मा गांधी नरेगा — ब्लॉक-वार / उपयंत्री-वार प्रगति डैशबोर्ड</h2>
-    <div class="dots"><span></span><span></span><span></span><span></span></div>
+<div class="gbar"></div>
+<header class="appbar">
+ <div class="row">
+  <div>
+   <h1>मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला कटनी</h1>
+   <div class="sub">मनरेगा (VB‑G RAM G) — ब्लॉक वार पंचायत डैशबोर्ड • e‑Muster रोल विश्लेषण</div>
+  </div>
+  <div class="updchip" id="updChip">⏳ लोड हो रहा है…</div>
+ </div>
 </header>
 
-<div class="container">
-    <div id="loadingMsg" class="loading">⏳ डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...</div>
+<div class="wrap">
+ <div id="loadNote"></div>
+ <div class="kpis" id="kpis"></div>
 
-    <div id="dashboardContent" style="display:none;">
+ <div class="stitle"><span class="ic">📊</span> ब्लॉक‑वार तुलनात्मक चार्ट</div>
+ <div class="charts">
+  <div class="chart-card"><h4>ब्लॉक‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
+  <div class="chart-card"><h4>ब्लॉक‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
+ </div>
 
-        <!-- District Level Summary -->
-        <div class="summary-grid" id="districtSummary"></div>
+ <div class="stitle"><span class="ic">🧱</span> ब्लॉक‑वार विस्तृत रिपोर्ट <span class="muted" style="font-weight:400;font-size:12.5px">(पंक्ति पर क्लिक करें → उपयंत्री‑वार विस्तार)</span></div>
+ <div class="toolbar">
+  <input type="text" id="search" placeholder="🔍 पंचायत / उपयंत्री / ब्लॉक खोजें…">
+  <button class="gbtn" id="expandAll">सभी ब्लॉक खोलें</button>
+  <button class="gbtn" id="collapseAll">सभी बंद करें</button>
+ </div>
+ <div id="blocks"></div>
 
-        <!-- Block-wise Chart -->
-        <div class="section-card">
-            <h3>ब्लॉक-वार तुलनात्मक चार्ट</h3>
-            <canvas id="blockChart" height="90"></canvas>
-        </div>
-
-        <!-- Search -->
-        <div class="search-row">
-            <input type="text" id="searchInput" placeholder="🔍 ब्लॉक / उपयंत्री / पंचायत खोजें...">
-        </div>
-
-        <!-- Block Accordion -->
-        <div class="section-card">
-            <h3>ब्लॉक-वार विवरण (क्लिक करके देखें)</h3>
-            <div id="blockList"></div>
-        </div>
-
-    </div>
+ <details class="manual">
+  <summary>🛠️ मैन्युअल डेटा लोड (यदि auto‑load न चले)</summary>
+  <div class="row">
+   <input type="text" id="ghUrl" value="https://raw.githubusercontent.com/mgnregakatni2025/VBGRAMJI/main/data.json">
+   <button class="gbtn primary" id="loadGh">GitHub से लोड करें</button>
+  </div>
+  <textarea id="pasteArea" placeholder="या यहाँ JSON पेस्ट करें…"></textarea>
+  <div class="row"><button class="gbtn primary" id="loadPaste">पेस्ट लागू करें</button><span class="muted" id="loadStatus"></span></div>
+ </details>
 </div>
 
 <footer>
-    <div>Auto-generated Dashboard | Data Source: GitHub Repository</div>
-    <div id="fetchTime">डेटा फेच समय: --</div>
-    <div class="clock" id="liveClock">--:--:--</div>
+ <div>📅 <span class="ft-upd">अंतिम डेटा अपडेट: <span id="updTime">—</span></span></div>
+ <div style="margin-top:4px">जिला पंचायत कटनी • MGNREGA पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
 </footer>
 
 <script>
-const DATA_URL = "https://raw.githubusercontent.com/mgnregakatni2025/VBGRMAJI-KATNI/main/data.json";
+/* ====== REPO yahan badlein (autoLoad dono repo try karta hai) ====== */
+const REPO_PRIMARY = "VBGRAMJI";
+const REPO_FALLBACK = "VBGRMAJI-KATNI";
+const FNAME = "data.json";
+const STORE = "mgn_dash_v5";
+const LS_UPD = "mgn_dash_lastupd";
+let DATA=[], BLOCKS=[], charts={}, blockCharts={}, expanded=new Set();
+let FLAGS={};
 
-let headers = [];
-let COL = {};
-let rawData = [];
-let blockChartInstance = null;
-const enggChartInstances = {};
+/* ---------- helpers ---------- */
+const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
+const clean=s=>String(s==null?"":s).trim();
+const up=s=>clean(s).toUpperCase();
+const norm=s=>(s||"").toString().replace(/\s+/g,"").toUpperCase();
+const san=s=>(s||"x").toString().replace(/[^a-zA-Z0-9]/g,"_");
+function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="DYSFUNCTIONAL"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
 
-// ---------------- Live Clock ----------------
-function updateClock() {
-    document.getElementById('liveClock').innerText =
-        new Date().toLocaleString('hi-IN', { dateStyle: 'full', timeStyle: 'medium' });
+/* column classifier (priority order; budget/mandays before labour-engagement) */
+function classify(h){
+ h=up(h); if(!h) return null;
+ if(h.includes("BUDGET")) return "budget";
+ if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
+ if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
+ if(h.includes("BLOCK")) return "block";
+ if(h.includes("ENGG")||h.includes("ENGINEER")) return "engineer";
+ if(h.includes("SNO")||h==="#"||h.includes("क्र")) return "sno";
+ if(h.includes("TOTAL")&&h.includes("PANCHAYAT")) return "totalGP";
+ if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")) return "wip";
+ if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")) return "labour";
+ if(h.includes("ONGOING")) return "ongoing";
+ if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")) return "ekyc";
+ if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")) return "mr";
+ if(h.includes("PANCHAYAT")||h.includes("पंचायत")) return "panchayat";
+ return null;
 }
-setInterval(updateClock, 1000);
-updateClock();
-
-// ---------------- Fetch Data ----------------
-fetch(DATA_URL + "?t=" + new Date().getTime())
-    .then(res => res.json())
-    .then(json => processData(json))
-    .catch(err => showError("❌ डेटा लोड करने में त्रुटि: " + err));
-
-function showError(msg) {
-    document.getElementById('loadingMsg').style.display = 'block';
-    document.getElementById('loadingMsg').innerText = msg;
+function parseLong(arr){
+ let hi=-1;
+ for(let i=0;i<Math.min(6,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
+  const g=new Set(r.map(classify).filter(Boolean));if(g.size>=3){hi=i;break;}}
+ if(hi<0) return [];
+ const idx={};arr[hi].forEach((h,i)=>{const c=classify(h);if(c&&idx[c]===undefined)idx[c]=i;});
+ const out=[];
+ for(let i=hi+1;i<arr.length;i++){const r=arr[i];if(!Array.isArray(r))continue;
+  const get=k=>idx[k]!==undefined?r[idx[k]]:"";
+  const p=clean(get("panchayat"));if(isJunkPanch(p))continue;
+  let eng=clean(get("engineer"));if(!eng||up(eng)==="#N/A"||up(eng)==="N/A")eng="—";
+  let blk=up(get("block"))||"—";
+  let sec=clean(get("sector"));if(up(sec)==="#N/A"||up(sec)==="N/A")sec="";
+  out.push({panchayat:p,block:blk,engineer:eng,sector:sec,
+   totalGP:num(get("totalGP")),wip:num(get("wip")),labour:num(get("labour")),
+   ongoing:num(get("ongoing")),ekyc:num(get("ekyc")),mr:num(get("mr")),
+   mandays:num(get("mandays")),budget:num(get("budget"))});}
+ return out;
 }
-
-function toNum(v) { let n = parseFloat(v); return isNaN(n) ? 0 : n; }
-
-function findCol(...keywords) {
-    for (let i = 0; i < headers.length; i++) {
-        let h = (headers[i] || "").toString().toLowerCase();
-        if (keywords.some(k => h.includes(k.toLowerCase()))) return i;
-    }
-    return -1;
-}
-
-function processData(json) {
-    console.log("📦 पूरा JSON:", json);
-    if (!json || json.length < 2) { showError("डेटा उपलब्ध नहीं है।"); return; }
-
-    headers = json[0];
-
-    COL.sno = findCol("sno");
-    COL.panchayat = findCol("panchayat");
-    COL.totalGP = findCol("total no. of gram");
-    COL.gpWorks = findCol("with works", "works in progress");
-    COL.maxLabour = findCol("maximum expected");
-    COL.ongoingMR = findCol("ongoing works");
-    COL.noKYC = findCol("without e-kyc", "e-kyc");
-    COL.musterRolls = findCol("no. of muster rolls");
-    COL.block = findCol("block");
-    COL.engg = findCol("engg");
-    COL.sector = findCol("sector", "secotr");
-    COL.mandays = findCol("manday");
-    COL.labourBudget = findCol("labour_budget", "budget");
-
-    console.log("🔗 Column mapping:", COL);
-
-    rawData = json.slice(1).filter(row => {
-        let block = (row[COL.block] || "").toString().trim();
-        let panchayat = (row[COL.panchayat] || "").toString().trim();
-        if (block === "" || panchayat === "") return false;
-        if (panchayat.toLowerCase() === "total") return false;
-        return true;
-    }).map(row => ({
-        sno: row[COL.sno],
-        panchayat: (row[COL.panchayat] || "").toString().trim(),
-        totalGP: toNum(row[COL.totalGP]),
-        gpWorks: toNum(row[COL.gpWorks]),
-        maxLabour: toNum(row[COL.maxLabour]),
-        ongoingMR: toNum(row[COL.ongoingMR]),
-        noKYC: toNum(row[COL.noKYC]),
-        musterRolls: toNum(row[COL.musterRolls]),
-        block: (row[COL.block] || "अज्ञात").toString().trim(),
-        engg: (row[COL.engg] || "अज्ञात").toString().trim(),
-        sector: (row[COL.sector] || "-").toString().trim(),
-        mandays: toNum(row[COL.mandays]),
-        labourBudget: toNum(row[COL.labourBudget])
-    }));
-
-    console.log("✅ साफ किया हुआ rawData:", rawData);
-
-    if (rawData.length === 0) { showError("⚠️ कोई डेटा row नहीं मिली। Console चेक करें।"); return; }
-
-    document.getElementById('fetchTime').innerText =
-        "डेटा फेच समय: " + new Date().toLocaleString('hi-IN');
-
-    renderDashboard();
+function rowFromObj(o){const r={panchayat:"",block:"—",engineer:"—",sector:"",totalGP:0,wip:0,labour:0,ongoing:0,ekyc:0,mr:0,mandays:0,budget:0};
+ for(const k in o){const c=classify(k);if(c)r[c]=(["panchayat","engineer","block","sector"].includes(c))?clean(o[k]):num(o[k]);}
+ if(!r.block||up(r.block)==="#N/A")r.block="—"; if(!r.engineer||up(r.engineer)==="#N/A")r.engineer="—";
+ if(up(r.sector)==="#N/A")r.sector=""; return r;}
+function normalize(input){
+ if(typeof input==="string")input=JSON.parse(input);
+ if(input&&input.data)input=input.data;
+ if(!Array.isArray(input))throw new Error("अमान्य डेटा");
+ if(input.length&&Array.isArray(input[0]))return parseLong(input);
+ if(input.length&&typeof input[0]==="object")return input.map(rowFromObj);
+ return [];
 }
 
-function aggregate(rows) {
-    return {
-        count: rows.length,
-        totalGP: rows.reduce((s, r) => s + r.totalGP, 0),
-        withWorks: rows.filter(r => r.gpWorks > 0).length,
-        dysfunctional: rows.filter(r => r.gpWorks === 0).length,
-        maxLabour: rows.reduce((s, r) => s + r.maxLabour, 0),
-        mandays: rows.reduce((s, r) => s + r.mandays, 0),
-        labourBudget: rows.reduce((s, r) => s + r.labourBudget, 0),
-        ongoingMR: rows.reduce((s, r) => s + r.ongoingMR, 0),
-        noKYC: rows.reduce((s, r) => s + r.noKYC, 0),
-        musterRolls: rows.reduce((s, r) => s + r.musterRolls, 0)
-    };
+/* ---------- compute ---------- */
+function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
+function dysCount(list){return list.filter(r=>r.wip===0).length;}
+function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCount(list),
+  labour:sum(list,"labour"),mandays:sum(list,"mandays"),budget:sum(list,"budget"),
+  mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc")};}
+function compute(d){
+ FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
+  ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
+ const blocks=[];const bmap={};
+ d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
+ blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
+  b.rows.forEach(r=>{if(!emap[r.engineer]){emap[r.engineer]={engineer:r.engineer,sector:r.sector,rows:[]};b.engs.push(emap[r.engineer]);}
+   emap[r.engineer].rows.push(r); if(r.sector&&r.sector!=="—")emap[r.engineer].sector=r.sector;});
+  b.engs.forEach(e=>e.m=metrics(e.rows));});
+ return {k:metrics(d),blocks,engCount:new Set(d.map(r=>r.engineer)).size};
 }
 
-function fmt(n) {
-    return n.toLocaleString('en-IN');
+/* ---------- metric chips ---------- */
+function metricChips(m,scope){
+ let h=`<span class="m blue">कुल पंचायतें <b>${m.total}</b></span>`;
+ h+=`<span class="m ok">सक्रिय (WIP) <b>${m.wip}</b></span>`;
+ h+=`<span class="m warn">Dysfunctional <b>${m.dys}</b></span>`;
+ h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
+ if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
+ if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
+ if(scope==="top"){ if(FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`; }
+ return h;
 }
 
-function renderDashboard() {
-    document.getElementById('loadingMsg').style.display = 'none';
-    document.getElementById('dashboardContent').style.display = 'block';
-
-    // ---------- District Summary ----------
-    const districtAgg = aggregate(rawData);
-    document.getElementById('districtSummary').innerHTML = `
-        <div class="stat-card"><h3>${fmt(districtAgg.count)}</h3><p>कुल पंचायतें</p></div>
-        <div class="stat-card green"><h3>${fmt(districtAgg.withWorks)}</h3><p>✅ काम चालू (Work in Progress)</p></div>
-        <div class="stat-card red"><h3>${fmt(districtAgg.dysfunctional)}</h3><p>⚠️ Dysfunctional पंचायतें</p></div>
-        <div class="stat-card"><h3>${fmt(districtAgg.maxLabour)}</h3><p>Max Expected Labour Engagement</p></div>
-        <div class="stat-card yellow"><h3>${fmt(districtAgg.mandays)}</h3><p>कुल MANDAYS</p></div>
-        <div class="stat-card yellow"><h3>₹${fmt(districtAgg.labourBudget)}</h3><p>Labour Budget</p></div>
-    `;
-
-    // ---------- Group by Block ----------
-    let blockMap = {};
-    rawData.forEach(r => {
-        if (!blockMap[r.block]) blockMap[r.block] = [];
-        blockMap[r.block].push(r);
-    });
-
-    // ---------- Block-wise Chart ----------
-    renderBlockChart(blockMap);
-
-    // ---------- Block Accordion ----------
-    renderBlockList(blockMap);
-
-    // ---------- Search ----------
-    document.getElementById('searchInput').addEventListener('input', applyFilter);
+/* ---------- table columns ---------- */
+function visCols(){
+ const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"अपेक्षित श्रम"}];
+ if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे MR"});
+ if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
+ if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
+ if(FLAGS.sector)c.push({k:"sector",t:"सेक्टर"});
+ if(FLAGS.mandays)c.push({k:"mandays",t:"मानव‑दिवस"});
+ if(FLAGS.budget)c.push({k:"budget",t:"श्रम बजट"});
+ return c;
+}
+function panchRow(r,i){
+ const dys=r.wip===0;
+ let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
+ visCols().forEach(c=>{
+  if(c.k==="panchayat")return;
+  if(c.k==="wip")cells+=`<td><span class="pill ${dys?'r':'g'}">${r.wip}</span> <span class="st ${dys?'d':'a'}">${dys?'DYS':'चालू'}</span></td>`;
+  else if(c.k==="sector")cells+=`<td>${r.sector||'—'}</td>`;
+  else cells+=`<td>${r[c.k]}</td>`;});
+ return `<tr class="${dys?'dys':''}">${cells}</tr>`;
+}
+function tableHTML(rows){
+ const vc=visCols();
+ const head=`<tr><th>#</th>`+vc.map(c=>`<th>${c.t}</th>`).join("")+`</tr>`;
+ const body=rows.length?rows.map((r,i)=>panchRow(r,i+1)).join(""):`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="muted">कोई पंचायत नहीं</td></tr>`;
+ return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
-function renderBlockChart(blockMap) {
-    let labels = Object.keys(blockMap).sort();
-    let maxLabourData = labels.map(b => aggregate(blockMap[b]).maxLabour);
-    let mandaysData = labels.map(b => aggregate(blockMap[b]).mandays);
-
-    if (blockChartInstance) blockChartInstance.destroy();
-    blockChartInstance = new Chart(document.getElementById('blockChart'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Max Expected Labour', data: maxLabourData, backgroundColor: '#4285F4', borderRadius: 4 },
-                { label: 'MANDAYS', data: mandaysData, backgroundColor: '#34A853', borderRadius: 4 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+/* ---------- KPI ---------- */
+function renderKPI(k,engCount){
+ const d=[["कुल पंचायतें",k.total,""],["सक्रिय (Works in Progress)",k.wip,"green"],
+  ["Dysfunctional पंचायतें",k.dys,"red"],["अपेक्षित श्रम (Max Labour)",k.labour,"yellow"],
+  ["कुल ब्लॉक",BLOCKS.length,""],["कुल उपयंत्री",engCount,"teal"]];
+ if(FLAGS.mandays)d.push(["कुल मानव‑दिवस",k.mandays,""]);
+ if(FLAGS.budget)d.push(["कुल श्रम बजट",k.budget,""]);
+ if(FLAGS.mr)d.push(["कुल Muster Rolls",k.mr,""]);
+ document.getElementById("kpis").innerHTML=d.map(x=>`<div class="kpi ${x[2]}"><div class="v">${x[1]}</div><div class="l">${x[0]}</div></div>`).join("");
 }
 
-function renderBlockList(blockMap) {
-    const container = document.getElementById('blockList');
-    container.innerHTML = '';
-
-    Object.keys(blockMap).sort().forEach((blockName, bIdx) => {
-        const blockRows = blockMap[blockName];
-        const agg = aggregate(blockRows);
-
-        const blockDiv = document.createElement('div');
-        blockDiv.className = 'block-item';
-        blockDiv.setAttribute('data-block', blockName.toLowerCase());
-
-        blockDiv.innerHTML = `
-            <div class="block-header" onclick="toggleBlock(${bIdx})">
-                <div class="block-title"><span class="arrow">▶</span> 📍 ${blockName}</div>
-                <div class="mini-stats">
-                    <span class="mini-stat">कुल: <b>${agg.count}</b></span>
-                    <span class="mini-stat prog">✅ चालू: <b>${agg.withWorks}</b></span>
-                    <span class="mini-stat dys">⚠️ बंद: <b>${agg.dysfunctional}</b></span>
-                    <span class="mini-stat">Labour: <b>${fmt(agg.maxLabour)}</b></span>
-                    <span class="mini-stat">Mandays: <b>${fmt(agg.mandays)}</b></span>
-                    <span class="mini-stat budget">Budget: <b>₹${fmt(agg.labourBudget)}</b></span>
-                </div>
-            </div>
-            <div class="block-body" id="block-body-${bIdx}">
-                <div class="summary-grid" style="margin-bottom:14px;">
-                    <div class="stat-card"><h3>${agg.count}</h3><p>कुल पंचायतें</p></div>
-                    <div class="stat-card green"><h3>${agg.withWorks}</h3><p>✅ काम चालू</p></div>
-                    <div class="stat-card red"><h3>${agg.dysfunctional}</h3><p>⚠️ Dysfunctional</p></div>
-                    <div class="stat-card"><h3>${fmt(agg.maxLabour)}</h3><p>Max Expected Labour</p></div>
-                    <div class="stat-card yellow"><h3>${fmt(agg.mandays)}</h3><p>MANDAYS</p></div>
-                    <div class="stat-card yellow"><h3>₹${fmt(agg.labourBudget)}</h3><p>Labour Budget</p></div>
-                </div>
-                <h3 style="font-size:14px; margin-bottom:10px; color:#5f6368;">👷 उपयंत्री-वार चार्ट (${blockName})</h3>
-                <canvas id="engg-chart-${bIdx}" height="80"></canvas>
-                <h3 style="font-size:14px; margin:16px 0 10px; color:#5f6368;">उपयंत्री-वार विवरण</h3>
-                <div id="engg-list-${bIdx}"></div>
-            </div>
-        `;
-        container.appendChild(blockDiv);
-    });
-
-    // Store blockMap globally for lazy chart/engineer rendering on expand
-    window.__blockMap = blockMap;
+/* ---------- charts ---------- */
+function mk(id,type,data,extra){if(charts[id])charts[id].destroy();
+ charts[id]=new Chart(document.getElementById(id),{type,data,options:{responsive:true,maintainAspectRatio:false,...extra,
+  plugins:{legend:{position:"bottom",labels:{font:{size:11,family:"Roboto"}}}},
+  scales:type==="doughnut"?{}:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});}
+function renderTopCharts(){
+ const names=BLOCKS.map(b=>b.block);
+ mk("chBlockStatus","bar",{labels:names,datasets:[
+  {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"#34a853"},
+  {label:"Dysfunctional",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"#ea4335"}]},{});
+ const ds=[{label:"अपेक्षित श्रम",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"#1a73e8"}];
+ if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"#fbbc04"});
+ if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"#00897b"});
+ mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
+}
+function buildEngChart(b){
+ const id="chEng_"+san(b.block);
+ const cv=document.getElementById(id);if(!cv)return;
+ if(blockCharts[id])blockCharts[id].destroy();
+ const names=b.engs.map(e=>e.engineer);
+ blockCharts[id]=new Chart(cv,{type:"bar",data:{labels:names,datasets:[
+  {label:"सक्रिय (WIP)",data:b.engs.map(e=>e.m.wip),backgroundColor:"#34a853"},
+  {label:"Dysfunctional",data:b.engs.map(e=>e.m.dys),backgroundColor:"#ea4335"}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
+   scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
 }
 
-function toggleBlock(bIdx) {
-    const header = document.querySelectorAll('.block-header')[bIdx];
-    const body = document.getElementById('block-body-' + bIdx);
-    const isOpening = !body.classList.contains('open');
+/* ---------- blocks accordion ---------- */
+function renderBlocks(filter,forceExpand){
+ const q=(filter||"").trim().toLowerCase();
+ const wrap=document.getElementById("blocks");
+ let html="";
+ BLOCKS.forEach(b=>{
+  // engineer panels (table rows filtered, header metrics full)
+  let engHTML="";let blockHasMatch=false;
+  b.engs.forEach(e=>{
+   const frows=q?e.rows.filter(r=>matchRow(r,q)):e.rows;
+   if(q&&frows.length===0)return;
+   blockHasMatch=true;
+   engHTML+=`<div class="eng">
+     <div class="eng-head"><span class="en">👷 ${e.engineer}</span>${e.sector?`<span class="sec">• सेक्टर: ${e.sector}</span>`:""}
+      <span class="eng-metrics">${metricChips(e.m,"eng")}</span></div>
+     ${tableHTML(frows)}</div>`;});
+  if(q&&!blockHasMatch)return;
+  const open=forceExpand||expanded.has(b.block);
+  html+=`<div class="block ${open?'open':''}" data-block="${b.block}">
+   <div class="block-head" data-toggle="${b.block}">
+    <span class="chev">▶</span>
+    <span class="blk-name">🧱 ${b.block}</span>
+    <span class="blk-metrics">${metricChips(b.m,"top")}</span>
+   </div>
+   <div class="block-body">
+    <div class="eng-ch-wrap"><h4 style="margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:500">उपयंत्री‑वार चार्ट — ${b.block}</h4><div class="ch"><canvas id="chEng_${san(b.block)}"></canvas></div></div>
+    ${engHTML}
+   </div></div>`;});
+ if(!html)html=`<div class="muted" style="padding:20px;text-align:center">कोई ब्लॉक मेल नहीं खाया</div>`;
+ wrap.innerHTML=html;
+ // build charts for open blocks
+ BLOCKS.forEach(b=>{if((forceExpand||expanded.has(b.block)))buildEngChart(b);});
+}
+function matchRow(r,q){return r.panchayat.toLowerCase().includes(q)||r.engineer.toLowerCase().includes(q)||r.block.toLowerCase().includes(q)||(r.sector||"").toLowerCase().includes(q);}
 
-    header.classList.toggle('open');
-    body.classList.toggle('open');
-
-    if (isOpening && !body.dataset.rendered) {
-        const blockName = Object.keys(window.__blockMap).sort()[bIdx];
-        const blockRows = window.__blockMap[blockName];
-        renderEnggChart(bIdx, blockRows);
-        renderEnggList(bIdx, blockRows);
-        body.dataset.rendered = "true";
-    }
+/* ---------- footer / stamp ---------- */
+function stamp(){
+ const t=new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
+ document.getElementById("updTime").textContent=t;
+ document.getElementById("updChip").textContent="🔄 अपडेट: "+t;
+ document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" ब्लॉक लोड";
+ try{localStorage.setItem(LS_UPD,t);}catch(e){}
 }
 
-function renderEnggChart(bIdx, blockRows) {
-    let enggMap = {};
-    blockRows.forEach(r => {
-        if (!enggMap[r.engg]) enggMap[r.engg] = [];
-        enggMap[r.engg].push(r);
-    });
-
-    let labels = Object.keys(enggMap).sort();
-    let maxLabourData = labels.map(e => aggregate(enggMap[e]).maxLabour);
-    let mandaysData = labels.map(e => aggregate(enggMap[e]).mandays);
-
-    const ctx = document.getElementById('engg-chart-' + bIdx);
-    if (enggChartInstances[bIdx]) enggChartInstances[bIdx].destroy();
-    enggChartInstances[bIdx] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Max Expected Labour', data: maxLabourData, backgroundColor: '#EA4335', borderRadius: 4 },
-                { label: 'MANDAYS', data: mandaysData, backgroundColor: '#FBBC04', borderRadius: 4 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+/* ---------- master ---------- */
+function renderAll(d){
+ DATA=d;const r=compute(d);BLOCKS=r.blocks;
+ renderKPI(r.k,r.engCount);renderTopCharts();renderBlocks("",false);stamp();
 }
 
-function renderEnggList(bIdx, blockRows) {
-    let enggMap = {};
-    blockRows.forEach(r => {
-        if (!enggMap[r.engg]) enggMap[r.engg] = [];
-        enggMap[r.engg].push(r);
-    });
+/* ---------- events ---------- */
+document.getElementById("blocks").addEventListener("click",e=>{
+ const h=e.target.closest("[data-toggle]");if(!h)return;
+ const b=h.dataset.toggle;
+ if(expanded.has(b))expanded.delete(b);else expanded.add(b);
+ renderBlocks(document.getElementById("search").value,false);});
+let db;document.getElementById("search").addEventListener("input",e=>{clearTimeout(db);const v=e.target.value;
+ db=setTimeout(()=>renderBlocks(v,v.trim()!==""),180);});
+document.getElementById("expandAll").addEventListener("click",()=>{BLOCKS.forEach(b=>expanded.add(b.block));renderBlocks(document.getElementById("search").value,false);});
+document.getElementById("collapseAll").addEventListener("click",()=>{expanded.clear();renderBlocks(document.getElementById("search").value,false);});
 
-    const container = document.getElementById('engg-list-' + bIdx);
-    container.innerHTML = '';
-
-    Object.keys(enggMap).sort().forEach((enggName, eIdx) => {
-        const rows = enggMap[enggName];
-        const agg = aggregate(rows);
-        const uid = bIdx + '-' + eIdx;
-
-        const enggDiv = document.createElement('div');
-        enggDiv.className = 'engg-item';
-        enggDiv.setAttribute('data-engg', enggName.toLowerCase());
-
-        const tableRows = rows.map(r => {
-            const rowClass = r.gpWorks > 0 ? 'row-prog' : 'row-dys';
-            return `<tr class="${rowClass}" data-panchayat="${r.panchayat.toLowerCase()}">
-                <td class="p-name">${r.panchayat}</td>
-                <td>${r.sector}</td>
-                <td>${r.gpWorks > 0 ? '✅ चालू' : '⚠️ बंद'}</td>
-                <td>${fmt(r.maxLabour)}</td>
-                <td>${fmt(r.ongoingMR)}</td>
-                <td>${fmt(r.noKYC)}</td>
-                <td>${fmt(r.musterRolls)}</td>
-                <td>${fmt(r.mandays)}</td>
-                <td>₹${fmt(r.labourBudget)}</td>
-            </tr>`;
-        }).join('');
-
-        enggDiv.innerHTML = `
-            <div class="engg-header" onclick="toggleEngg('${uid}')">
-                <div class="engg-title"><span class="arrow">▶</span> 👷 ${enggName}</div>
-                <div class="mini-stats">
-                    <span class="mini-stat">कुल: <b>${agg.count}</b></span>
-                    <span class="mini-stat prog">✅ <b>${agg.withWorks}</b></span>
-                    <span class="mini-stat dys">⚠️ <b>${agg.dysfunctional}</b></span>
-                    <span class="mini-stat">Labour: <b>${fmt(agg.maxLabour)}</b></span>
-                    <span class="mini-stat">Mandays: <b>${fmt(agg.mandays)}</b></span>
-                    <span class="mini-stat budget">₹<b>${fmt(agg.labourBudget)}</b></span>
-                </div>
-            </div>
-            <div class="engg-body" id="engg-body-${uid}">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>पंचायत</th><th>सेक्टर</th><th>स्थिति</th><th>Max Expected Labour</th>
-                            <th>Ongoing MR Works</th><th>No e-KYC</th><th>Muster Rolls</th>
-                            <th>Mandays</th><th>Labour Budget</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-            </div>
-        `;
-        container.appendChild(enggDiv);
-    });
+/* ---------- load ---------- */
+function setStatus(t){document.getElementById("loadStatus").textContent=t;}
+function applyAndStore(t){try{const n=normalize(t);if(!n.length)throw new Error("कोई वैध पंक्ति नहीं — JSON format जाँचें");
+  renderAll(n);try{localStorage.setItem(STORE,JSON.stringify(n));}catch(e){}setStatus("✅ "+n.length+" पंचायतें");}
+  catch(e){setStatus("❌ "+e.message);document.getElementById("loadNote").textContent="⚠️ parse त्रुटि: "+e.message;}}
+async function autoLoad(){
+ const urls=[`https://raw.githubusercontent.com/mgnregakatni2025/${REPO_PRIMARY}/main/${FNAME}`,
+  `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_PRIMARY}/master/${FNAME}`,
+  `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_FALLBACK}/main/${FNAME}`,
+  `https://raw.githubusercontent.com/mgnregakatni2025/${REPO_FALLBACK}/master/${FNAME}`];
+ for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){applyAndStore(await r.text());return true;}}catch(e){}}
+ return false;
 }
+document.getElementById("loadPaste").onclick=()=>{const t=document.getElementById("pasteArea").value.trim();if(!t){setStatus("⚠️ पहले JSON पेस्ट करें");return;}applyAndStore(t);};
+document.getElementById("loadGh").onclick=async()=>{setStatus("⏳ लोड…");try{const r=await fetch(document.getElementById("ghUrl").value.trim(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);applyAndStore(await r.text());}catch(e){setStatus("❌ "+e.message);}};
 
-function toggleEngg(uid) {
-    const body = document.getElementById('engg-body-' + uid);
-    const header = body.previousElementSibling;
-    header.classList.toggle('open');
-    body.classList.toggle('open');
-}
-
-function applyFilter() {
-    const val = document.getElementById('searchInput').value.toLowerCase();
-
-    document.querySelectorAll('.block-item').forEach(blockEl => {
-        const blockName = blockEl.getAttribute('data-block');
-        let blockMatches = blockName.includes(val);
-
-        // Also check nested engg/panchayat matches (if body already rendered)
-        let anyChildMatch = false;
-        blockEl.querySelectorAll('.engg-item').forEach(enggEl => {
-            const enggName = enggEl.getAttribute('data-engg');
-            let enggMatch = enggName.includes(val);
-            let anyRowMatch = false;
-            enggEl.querySelectorAll('tbody tr').forEach(tr => {
-                const pname = tr.getAttribute('data-panchayat');
-                const match = pname.includes(val);
-                tr.style.display = (val === '' || match || enggMatch || blockMatches) ? '' : 'none';
-                if (match) anyRowMatch = true;
-            });
-            const showEngg = val === '' || enggMatch || anyRowMatch || blockMatches;
-            enggEl.style.display = showEngg ? '' : 'none';
-            if (showEngg && val !== '') anyChildMatch = true;
-        });
-
-        blockEl.style.display = (val === '' || blockMatches || anyChildMatch) ? '' : 'none';
-
-        // Auto-expand if searching and match found in children
-        if (val !== '' && anyChildMatch) {
-            const body = blockEl.querySelector('.block-body');
-            const header = blockEl.querySelector('.block-header');
-            if (!body.classList.contains('open')) {
-                const bIdx = Array.from(document.querySelectorAll('.block-item')).indexOf(blockEl);
-                toggleBlock(bIdx);
-            }
-        }
-    });
-}
+/* ---------- init ---------- */
+(async function(){
+ try{const u=localStorage.getItem(LS_UPD);if(u){document.getElementById("updTime").textContent=u;document.getElementById("updChip").textContent="🔄 अपडेट: "+u;}}catch(e){}
+ const saved=localStorage.getItem(STORE);
+ if(saved){try{renderAll(JSON.parse(saved));}catch(e){}}
+ const ok=await autoLoad();
+ if(!ok&&!saved)document.getElementById("loadNote").innerHTML="⚠️ GitHub से डेटा नहीं मिला — repo/branch जाँचें या नीचे मैन्युअल लोड करें";
+})();
 </script>
-
 </body>
 </html>
-
