@@ -25,9 +25,13 @@
  html{scroll-behavior:smooth}
  body{font-family:"Roboto","Noto Sans Devanagari",system-ui,sans-serif;
   background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+ /* ===== एनिमेटेड ग्रेडिएंट बार ===== */
  .gbar{height:5px;background:linear-gradient(90deg,var(--pri),var(--red),var(--amb),var(--grn),var(--pri));
   background-size:300% 100%;animation:gSlide 6s linear infinite}
  @keyframes gSlide{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+ /* ===== हेडर ===== */
  header.appbar{background:linear-gradient(135deg,#0d47a1 0%,#1565c0 50%,#0277bd 100%);
   box-shadow:var(--sh3);padding:0;position:sticky;top:0;z-index:50}
  .appbar .row{max-width:1320px;margin:0 auto;padding:16px clamp(14px,4vw,32px);
@@ -37,8 +41,11 @@
  .updchip{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   color:#fff;font-size:11px;font-weight:500;padding:6px 14px;border-radius:20px;white-space:nowrap;
   border:1px solid rgba(255,255,255,.2);letter-spacing:.2px}
+
  .wrap{max-width:1320px;margin:0 auto;padding:clamp(14px,3vw,24px)}
  #loadNote{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:500}
+
+ /* ===== KPI कार्ड ===== */
  .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin-bottom:24px}
  .kpi{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:18px 18px 16px;
   position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid rgba(0,0,0,.04)}
@@ -55,11 +62,15 @@
   background:linear-gradient(135deg,var(--ink),#37474f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text}
  .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+ /* ===== सेक्शन शीर्षक ===== */
  .stitle{font-size:clamp(14px,3.2vw,17px);font-weight:700;margin:28px 0 14px;color:var(--ink);
   display:flex;align-items:center;gap:10px}
  .stitle .ic{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
   font-size:13px;background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;box-shadow:0 2px 6px rgba(13,71,161,.3)}
  .stitle .line{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+ /* ===== टूलबार ===== */
  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
  .toolbar input{flex:1 1 200px;min-width:160px;padding:10px 14px 10px 38px;border:1.5px solid var(--line);
   border-radius:var(--r2);font-size:13.5px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239e9e9e'%3E%3Cpath d='M11.7 10.3l2.6 2.6-1.4 1.4-2.6-2.6A5.5 5.5 0 116.5 1a5.5 5.5 0 015.2 9.3zM6.5 10a4 4 0 100-8 4 4 0 000 8z'/%3E%3C/svg%3E") 14px center no-repeat;
@@ -71,10 +82,14 @@
  .gbtn:hover{background:var(--pri-ll);border-color:var(--pri-l)}
  .gbtn.primary{background:var(--pri);color:#fff;border-color:var(--pri)}
  .gbtn.primary:hover{background:var(--pri-l)}
+
+ /* ===== चार्ट ===== */
  .charts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-bottom:8px}
  .chart-card{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:14px 16px;border:1px solid rgba(0,0,0,.04)}
  .chart-card h4{margin:0 0 6px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
  .chart-card .ch{position:relative;height:190px}
+
+ /* ===== फ़िल्टर बार ===== */
  #filterBar{display:none;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border:1px solid #90caf9;
   border-radius:var(--r2);padding:10px 16px;margin-bottom:14px;align-items:center;gap:10px;
   font-size:12.5px;font-weight:600;color:var(--pri);letter-spacing:.2px}
@@ -82,6 +97,8 @@
  #filterBar .clear-btn{cursor:pointer;background:var(--red);color:#fff;border:none;padding:5px 14px;
   border-radius:6px;font-size:11.5px;font-family:inherit;font-weight:600;transition:background .15s}
  #filterBar .clear-btn:hover{background:#b71c1c}
+
+ /* ===== मेट्रिक चिप्स ===== */
  .m{font-size:11px;background:#f3f4f6;border-radius:6px;padding:4px 10px;color:var(--muted);white-space:nowrap;
   font-weight:500;letter-spacing:.1px;border:1px solid transparent;transition:all .12s}
  .m b{color:var(--ink);font-weight:700}
@@ -91,6 +108,8 @@
  .filter-chip{cursor:pointer;transition:transform .12s,box-shadow .12s;user-select:none}
  .filter-chip:hover{transform:scale(1.06);box-shadow:0 2px 8px rgba(0,0,0,.12)}
  .filter-chip.active{outline:2.5px solid currentColor;outline-offset:1px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+
+ /* ===== स्तर 1: विकासखण्ड ===== */
  .block{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);margin-bottom:12px;
   overflow:hidden;border:1px solid rgba(0,0,0,.04);transition:box-shadow .2s}
  .block:hover{box-shadow:var(--sh2)}
@@ -107,6 +126,8 @@
  .block-body{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
  .block.open>.block-body{display:block;animation:fadeSlide .25s ease}
  @keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+ /* ===== स्तर 2: उपयंत्री ===== */
  .eng-row{border:1.5px solid var(--line);border-radius:var(--r2);margin-top:12px;overflow:hidden;
   background:#fff;transition:border-color .2s,box-shadow .2s}
  .eng-row:hover{border-color:#90caf9;box-shadow:0 2px 8px rgba(13,71,161,.06)}
@@ -122,6 +143,8 @@
  .eng-row-metrics{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
  .eng-row-body{display:none;border-top:1px solid var(--line);padding:0 10px 10px}
  .eng-row.open>.eng-row-body{display:block;animation:fadeSlide .25s ease}
+
+ /* ===== स्तर 3: चालू / DYS ===== */
  .sub-row{border:1.5px solid var(--line);border-radius:6px;margin-top:8px;overflow:hidden;transition:border-color .2s}
  .sub-row:hover{border-color:#b0bec5}
  .sub-row-head{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;user-select:none;
@@ -139,9 +162,13 @@
  .sub-row-metrics{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
  .sub-row-body{display:none;border-top:1px solid var(--line);padding:10px}
  .sub-row.open>.sub-row-body{display:block;animation:fadeSlide .2s ease}
+
+ /* ===== चार्ट (अंदरूनी) ===== */
  .eng-ch-wrap{margin:10px 0 2px}
  .eng-ch-wrap h4{margin:0 0 4px;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
  .eng-ch-wrap .ch{position:relative;height:150px}
+
+ /* ===== टेबल ===== */
  .tw{overflow-x:auto;border-radius:6px;border:1px solid var(--line)}
  table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
  thead th{background:linear-gradient(180deg,#f8f9fa,#f3f4f6);color:var(--muted);text-align:left;
@@ -159,14 +186,20 @@
  .pill.r{background:var(--red-l);color:var(--red);border:1px solid rgba(198,40,40,.15)}
  .st{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
  .st.a{background:var(--grn-l);color:var(--grn)} .st.d{background:var(--red-l);color:var(--red)}
+
  .mc{color:var(--muted)}
+
+ /* ===== फ़ुटर ===== */
  footer{background:linear-gradient(135deg,#f8f9fa,#fff);border-top:1px solid var(--line);
   margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:11.5px;letter-spacing:.2px}
  footer .ft-upd{color:var(--ink);font-weight:600}
+
+ /* ===== स्क्रॉलबार ===== */
  ::-webkit-scrollbar{width:6px;height:6px}
  ::-webkit-scrollbar-track{background:transparent}
  ::-webkit-scrollbar-thumb{background:#c4c4c4;border-radius:3px}
  ::-webkit-scrollbar-thumb:hover{background:#a0a0a0}
+
  @media(max-width:560px){
   .blk-metrics,.eng-row-metrics,.sub-row-metrics{margin-left:0;width:100%}
   .blk-name,.eng-row-name{min-width:0}
@@ -328,41 +361,10 @@ function updateFilterBar(){
  const bar=document.getElementById("filterBar");const lbl=document.getElementById("filterLabel");
  if(!activeFilter){bar.classList.remove("show");return;}
  bar.classList.add("show");
- lbl.textContent=activeFilter==="wip"
-  ?"🔍 सक्रिय पंचायतें — सभी विकासखण्ड खुले, केवल चालू पंचायतें प्रदर्शित"
-  :"🔍 Dysfunctional पंचायतें — सभी विकासखण्ड खुले, केवल Dysfunctional पंचायतें प्रदर्शित";
+ lbl.textContent=activeFilter==="wip"?"🔍 फ़िल्टर: केवल चालू पंचायतें (WIP > 0)":"🔍 फ़िल्टर: केवल Dysfunctional पंचायतें (WIP = 0)";
 }
-
-/* ===== मुख्य बदलाव: फ़िल्टर लगाते समय सब ऑटो-एक्सपेंड ===== */
-function setFilter(f){
- expanded.clear(); expandedEng.clear(); expandedSub.clear();
- if(activeFilter===f){
-  /* वही फ़िल्टर दोबारा → बंद करो */
-  activeFilter=null;
- } else {
-  activeFilter=f;
-  /* सभी विकासखण्ड खोलो */
-  BLOCKS.forEach(b=>{
-   expanded.add(b.block);
-   /* सभी उपयंत्री खोलो */
-   b.engs.forEach(e=>{
-    const ek=b.block+"::"+e.engineer;
-    expandedEng.add(ek);
-    /* मेल खाती सब-रो भी खोलो */
-    if(f==="wip"&&e.activeRows.length) expandedSub.add(ek+"::active");
-    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys");
-   });
-  });
- }
- updateFilterBar();
- renderBlocks(document.getElementById("search").value,false);
-}
-function clearFilter(){
- activeFilter=null;
- expanded.clear(); expandedEng.clear(); expandedSub.clear();
- updateFilterBar();
- renderBlocks(document.getElementById("search").value,false);
-}
+function setFilter(f){activeFilter=(activeFilter===f)?null:f;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
+function clearFilter(){activeFilter=null;updateFilterBar();renderBlocks(document.getElementById("search").value,false);}
 
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"अपेक्षित श्रम"}];
