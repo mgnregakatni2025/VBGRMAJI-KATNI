@@ -211,7 +211,7 @@
  <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट <span class="line"></span></div>
  <div class="charts">
   <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
-  <div class="chart-card"><h4>विकासखण्ड‑वार: अपेक्षित श्रम / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: नियोजित श्रृमिक / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
  <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:11.5px;text-transform:none;letter-spacing:0">(विकासखण्ड → उपयंत्री → चालू / DYS)</span> <span class="line"></span></div>
@@ -324,7 +324,7 @@ function metricChips(m,scope){
  const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
  h+=`<span class="${dysCls}" data-filter="dys">Dysfunctional <b>${m.dys}</b></span>`;
- h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
+ h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
@@ -332,7 +332,7 @@ function metricChips(m,scope){
 }
 function subChips(m){
  let h=`<span class="m blue">पंचायतें <b>${m.total}</b></span>`;
- h+=`<span class="m">अपेक्षित श्रम <b>${m.labour}</b></span>`;
+ h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
@@ -385,7 +385,7 @@ function clearFilter(){
 }
 
 function visCols(){
- const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"अपेक्षित श्रम"}];
+ const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"नियोजित श्रृमिक"}];
  if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे MR"});
  if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
  if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
@@ -417,7 +417,7 @@ function renderKPI(k,engCount){
   {label:"कुल पंचायतें",val:k.total,cls:""},
   {label:"सक्रिय (Works in Progress)",val:k.wip,cls:"green",clickable:true,filter:"wip"},
   {label:"Dysfunctional पंचायतें",val:k.dys,cls:"red",clickable:true,filter:"dys"},
-  {label:"अपेक्षित श्रम (Max Labour)",val:k.labour,cls:"yellow"},
+  {label:"नियोजित श्रृमिक (Max Labour)",val:k.labour,cls:"yellow"},
   {label:"कुल विकासखण्ड",val:BLOCKS.length,cls:""},
   {label:"कुल उपयंत्री",val:engCount,cls:"teal"}
  ];
@@ -445,7 +445,7 @@ function renderTopCharts(){
  mk("chBlockStatus","bar",{labels:names,datasets:[
   {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"Dysfunctional",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
- const ds=[{label:"अपेक्षित श्रम",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
+ const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
  if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
