@@ -58,7 +58,7 @@
   background-clip:text}
  .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
 
- /* ===== क्लिक-योग्य KPI (सक्रिय + Dysfunctional) ===== */
+ /* ===== क्लिक-योग्य KPI (सक्रिय + अक्रियाशील) ===== */
  .kpi.clickable{cursor:pointer;user-select:none}
  .kpi.clickable::after{content:"देखें →";position:absolute;bottom:10px;right:14px;
   font-size:9.5px;font-weight:700;color:var(--muted);opacity:0;transition:opacity .2s,transform .2s;transform:translateX(-4px);letter-spacing:.3px}
@@ -210,7 +210,7 @@
 
  <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट <span class="line"></span></div>
  <div class="charts">
-  <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम Dysfunctional पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम अक्रियाशील पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
   <div class="chart-card"><h4>विकासखण्ड‑वार: नियोजित श्रृमिक / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
@@ -229,7 +229,7 @@
 
 <footer>
  <div>📅 <span class="ft-upd">अंतिम डेटा अपडेट: <span id="updTime">—</span></span></div>
- <div style="margin-top:5px">जिला पंचायत कटनी • VB-G RAM G पंचायत सहभागिता डैशबोर्ड • Dysfunctional = Works in Progress 0</div>
+ <div style="margin-top:5px">जिला पंचायत कटनी • VB-G RAM G पंचायत सहभागिता डैशबोर्ड • अक्रियाशील = Works in Progress 0</div>
 </footer>
 
 <script>
@@ -248,7 +248,7 @@ const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return i
 const clean=s=>String(s==null?"":s).trim();
 const up=s=>clean(s).toUpperCase();
 const san=s=>(s||"x").toString().replace(/[^a-zA-Z0-9]/g,"_");
-function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="DYSFUNCTIONAL"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
+function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="अक्रियाशील"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
 
 function classify(h){
  h=up(h); if(!h) return null;
@@ -323,7 +323,7 @@ function metricChips(m,scope){
  const wipCls="m ok filter-chip"+(activeFilter==="wip"?" active":"");
  const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
- h+=`<span class="${dysCls}" data-filter="dys">Dysfunctional <b>${m.dys}</b></span>`;
+ h+=`<span class="${dysCls}" data-filter="dys">अक्रियाशील <b>${m.dys}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
@@ -345,7 +345,7 @@ function updateFilterBar(){
  bar.classList.add("show");
  lbl.textContent=activeFilter==="wip"
   ?"🔍 सक्रिय पंचायतें — सभी विकासखण्ड खुले, केवल चालू पंचायतें प्रदर्शित"
-  :"🔍 Dysfunctional पंचायतें — सभी विकासखण्ड खुले, केवल Dysfunctional पंचायतें प्रदर्शित";
+  :"🔍 अक्रियाशील पंचायतें — सभी विकासखण्ड खुले, केवल अक्रियाशील पंचायतें प्रदर्शित";
 }
 
 /* ===== KPI कार्ड पर active स्टेट भी सिंक करो ===== */
@@ -411,12 +411,12 @@ function tableHTML(rows){
  return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
-/* ===== KPI: सक्रिय और Dysfunctional क्लिक-योग्य ===== */
+/* ===== KPI: सक्रिय और अक्रियाशील क्लिक-योग्य ===== */
 function renderKPI(k,engCount){
  const d=[
   {label:"कुल पंचायतें",val:k.total,cls:""},
   {label:"सक्रिय (Works in Progress)",val:k.wip,cls:"green",clickable:true,filter:"wip"},
-  {label:"Dysfunctional पंचायतें",val:k.dys,cls:"red",clickable:true,filter:"dys"},
+  {label:"अक्रियाशील पंचायतें",val:k.dys,cls:"red",clickable:true,filter:"dys"},
   {label:"नियोजित श्रृमिक (Max Labour)",val:k.labour,cls:"yellow"},
   {label:"कुल विकासखण्ड",val:BLOCKS.length,cls:""},
   {label:"कुल उपयंत्री",val:engCount,cls:"teal"}
@@ -444,7 +444,7 @@ function renderTopCharts(){
  const names=BLOCKS.map(b=>b.block);
  mk("chBlockStatus","bar",{labels:names,datasets:[
   {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
-  {label:"Dysfunctional",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
+  {label:"अक्रियाशील",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
  if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
@@ -456,7 +456,7 @@ function buildEngChart(b){
  const names=b.engs.map(e=>e.engineer);
  blockCharts[id]=new Chart(cv,{type:"bar",data:{labels:names,datasets:[
   {label:"सक्रिय (WIP)",data:b.engs.map(e=>e.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
-  {label:"Dysfunctional",data:b.engs.map(e=>e.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},
+  {label:"अक्रियाशील",data:b.engs.map(e=>e.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},
   options:{responsive:true,maintainAspectRatio:false,
    plugins:{legend:{position:"bottom",labels:{font:{size:10,weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
    scales:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
@@ -497,7 +497,7 @@ function renderBlocks(filter,forceExpand){
      <div class="sub-row-head" data-toggle-sub="${sk}">
       <span class="chev">▶</span>
       <span class="sub-row-icon">❌</span>
-      <span class="sub-row-label dys-label">Dysfunctional — <b>${dr.length}</b> पंचायतें</span>
+      <span class="sub-row-label dys-label">अक्रियाशील — <b>${dr.length}</b> पंचायतें</span>
       <span class="sub-row-metrics">${subChips(e.dysM)}</span>
      </div>
      <div class="sub-row-body">${tableHTML(dr)}</div>
