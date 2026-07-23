@@ -211,7 +211,7 @@
  <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट <span class="line"></span></div>
  <div class="charts">
   <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम अक्रियाशील पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
-  <div class="chart-card"><h4>विकासखण्ड‑वार: नियोजित श्रृमिक / मानव‑दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: नियोजित श्रृमिक / श्रृजित मा0दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
  <div class="stitle"><span class="ic">🧱</span> विकासखण्ड‑वार विस्तृत रिपोर्ट <span class="mc" style="font-weight:400;font-size:11.5px;text-transform:none;letter-spacing:0">(विकासखण्ड → उपयंत्री → चालू / DYS)</span> <span class="line"></span></div>
@@ -325,7 +325,7 @@ function metricChips(m,scope){
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
  h+=`<span class="${dysCls}" data-filter="dys">अक्रियाशील <b>${m.dys}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
- if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
+ if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
  return h;
@@ -333,7 +333,7 @@ function metricChips(m,scope){
 function subChips(m){
  let h=`<span class="m blue">पंचायतें <b>${m.total}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
- if(FLAGS.mandays)h+=`<span class="m">मानव‑दिवस <b>${m.mandays}</b></span>`;
+ if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
  return h;
@@ -390,7 +390,7 @@ function visCols(){
  if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
  if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
  if(FLAGS.sector)c.push({k:"sector",t:"सेक्टर"});
- if(FLAGS.mandays)c.push({k:"mandays",t:"मानव‑दिवस"});
+ if(FLAGS.mandays)c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
  if(FLAGS.budget)c.push({k:"budget",t:"श्रम बजट"});
  return c;
 }
@@ -421,7 +421,7 @@ function renderKPI(k,engCount){
   {label:"कुल विकासखण्ड",val:BLOCKS.length,cls:""},
   {label:"कुल उपयंत्री",val:engCount,cls:"teal"}
  ];
- if(FLAGS.mandays)d.push({label:"कुल मानव‑दिवस",val:k.mandays,cls:""});
+ if(FLAGS.mandays)d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
  if(FLAGS.budget)d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
  if(FLAGS.mr)d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
 
@@ -446,7 +446,7 @@ function renderTopCharts(){
   {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"अक्रियाशील",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
- if(FLAGS.mandays)ds.push({label:"मानव‑दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.mandays)ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
 }
