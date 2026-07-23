@@ -210,7 +210,7 @@
 
  <div class="stitle"><span class="ic">📊</span> विकासखण्ड‑वार तुलनात्मक चार्ट <span class="line"></span></div>
  <div class="charts">
-  <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय (WIP) बनाम अक्रियाशील पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
+  <div class="chart-card"><h4>विकासखण्ड‑वार: सक्रिय बनाम अक्रियाशील पंचायतें</h4><div class="ch"><canvas id="chBlockStatus"></canvas></div></div>
   <div class="chart-card"><h4>विकासखण्ड‑वार: नियोजित श्रृमिक / श्रृजित मा0दिवस / श्रम बजट</h4><div class="ch"><canvas id="chBlockMetrics"></canvas></div></div>
  </div>
 
@@ -322,7 +322,7 @@ function metricChips(m,scope){
  let h=`<span class="m blue">कुल <b>${m.total}</b></span>`;
  const wipCls="m ok filter-chip"+(activeFilter==="wip"?" active":"");
  const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
- h+=`<span class="${wipCls}" data-filter="wip">सक्रिय (WIP) <b>${m.wip}</b></span>`;
+ h+=`<span class="${wipCls}" data-filter="wip">सक्रिय <b>${m.wip}</b></span>`;
  h+=`<span class="${dysCls}" data-filter="dys">अक्रियाशील <b>${m.dys}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
@@ -443,7 +443,7 @@ function mk(id,type,data,extra){if(charts[id])charts[id].destroy();
 function renderTopCharts(){
  const names=BLOCKS.map(b=>b.block);
  mk("chBlockStatus","bar",{labels:names,datasets:[
-  {label:"सक्रिय (WIP)",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
+  {label:"सक्रिय",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"अक्रियाशील",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
  if(FLAGS.mandays)ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
@@ -455,7 +455,7 @@ function buildEngChart(b){
  if(blockCharts[id])blockCharts[id].destroy();
  const names=b.engs.map(e=>e.engineer);
  blockCharts[id]=new Chart(cv,{type:"bar",data:{labels:names,datasets:[
-  {label:"सक्रिय (WIP)",data:b.engs.map(e=>e.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
+  {label:"सक्रिय",data:b.engs.map(e=>e.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"अक्रियाशील",data:b.engs.map(e=>e.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},
   options:{responsive:true,maintainAspectRatio:false,
    plugins:{legend:{position:"bottom",labels:{font:{size:10,weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
