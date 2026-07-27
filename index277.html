@@ -40,7 +40,6 @@
  .wrap{max-width:1320px;margin:0 auto;padding:clamp(14px,3vw,24px)}
  #loadNote{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:500}
 
- /* ===== KPI कार्ड ===== */
  .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin-bottom:24px}
  .kpi{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:18px 18px 16px;
   position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid rgba(0,0,0,.04)}
@@ -58,7 +57,6 @@
   background-clip:text}
  .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
 
- /* ===== क्लिक-योग्य KPI (सक्रिय + अक्रियाशील) ===== */
  .kpi.clickable{cursor:pointer;user-select:none}
  .kpi.clickable::after{content:"देखें →";position:absolute;bottom:10px;right:14px;
   font-size:9.5px;font-weight:700;color:var(--muted);opacity:0;transition:opacity .2s,transform .2s;transform:translateX(-4px);letter-spacing:.3px}
@@ -243,10 +241,15 @@ const up=s=>clean(s).toUpperCase();
 const san=s=>(s||"x").toString().replace(/[^a-zA-Z0-9]/g,"_");
 function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="अक्रियाशील"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
 
+/* ===== classify: LABOUR_BUDGET और ONGOING_WORK को सामान्य से पहले पकड़ो ===== */
 function classify(h){
  h=up(h); if(!h) return null;
  if(/^COLUMN\d*$/i.test(h)) return null;
  if(/^UNNAMED/i.test(h)) return null;
+ /* विशिष्ट पहचान — सामान्य से पहले रखो ताकि ओवरलैप न हो */
+ if(h.includes("LABOUR_BUDGET")||h==="LABOUR BUDGET"||h==="LEBOR_BUDGET"||h==="LEBOR BUDGET") return "labour_budget";
+ if(h.includes("ONGOING_WORK")||h==="ONGOING WORK"||h==="ONGOING WORKS"||h.includes("प्रगतिरत")) return "ongoing_work";
+ /* बाकी सामान्य पहचान */
  if(h.includes("BUDGET")) return "budget";
  if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
  if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
@@ -255,13 +258,14 @@ function classify(h){
  if(h.includes("SNO")||h==="#"||h.includes("क्र")) return "sno";
  if(h.includes("TOTAL")&&h.includes("PANCHAYAT")) return "totalGP";
  if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")) return "wip";
- if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")) return "labour";
+ if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")||h.includes("LABOUR")) return "labour";
  if(h.includes("ONGOING")) return "ongoing";
  if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")) return "ekyc";
  if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")) return "mr";
  if(h.includes("PANCHAYAT")||h.includes("पंचायत")) return "panchayat";
  return null;
 }
+
 function parseLong(arr){
  let hi=-1;
  for(let i=0;i<Math.min(6,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
@@ -278,13 +282,22 @@ function parseLong(arr){
   out.push({panchayat:p,block:blk,engineer:eng,sector:sec,
    totalGP:num(get("totalGP")),wip:num(get("wip")),labour:num(get("labour")),
    ongoing:num(get("ongoing")),ekyc:num(get("ekyc")),mr:num(get("mr")),
-   mandays:num(get("mandays")),budget:num(get("budget"))});}
+   mandays:num(get("mandays")),budget:num(get("budget")),
+   labour_budget:num(get("labour_budget")),ongoing_work:num(get("ongoing_work"))});}
  return out;
 }
-function rowFromObj(o){const r={panchayat:"",block:"—",engineer:"—",sector:"",totalGP:0,wip:0,labour:0,ongoing:0,ekyc:0,mr:0,mandays:0,budget:0};
- for(const k in o){const c=classify(k);if(c)r[c]=(["panchayat","engineer","block","sector"].includes(c))?clean(o[k]):num(o[k]);}
- if(!r.block||up(r.block)==="#N/A")r.block="—"; if(!r.engineer||up(r.engineer)==="#N/A")r.engineer="—";
- if(up(r.sector)==="#N/A")r.sector=""; return r;}
+
+function rowFromObj(o){
+ const r={panchayat:"",block:"—",engineer:"—",sector:"",totalGP:0,wip:0,labour:0,
+  ongoing:0,ekyc:0,mr:0,mandays:0,budget:0,labour_budget:0,ongoing_work:0};
+ for(const k in o){const c=classify(k);
+  if(c)r[c]=(["panchayat","engineer","block","sector"].includes(c))?clean(o[k]):num(o[k]);}
+ if(!r.block||up(r.block)==="#N/A")r.block="—";
+ if(!r.engineer||up(r.engineer)==="#N/A")r.engineer="—";
+ if(up(r.sector)==="#N/A")r.sector="";
+ return r;
+}
+
 function normalize(input){
  if(typeof input==="string")input=JSON.parse(input);
  if(input&&input.data)input=input.data;
@@ -298,10 +311,13 @@ function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
 function dysCount(list){return list.filter(r=>r.wip===0).length;}
 function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCount(list),
   labour:sum(list,"labour"),mandays:sum(list,"mandays"),budget:sum(list,"budget"),
-  mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc")};}
+  mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc"),
+  labour_budget:sum(list,"labour_budget"),ongoing_work:sum(list,"ongoing_work")};}
+
 function compute(d){
  FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
-  ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
+  ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—"),
+  labour_budget:d.some(r=>r.labour_budget>0),ongoing_work:d.some(r=>r.ongoing_work>0)};
  const blocks=[];const bmap={};
  d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
  blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
@@ -318,6 +334,8 @@ function metricChips(m,scope){
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय <b>${m.wip}</b></span>`;
  h+=`<span class="${dysCls}" data-filter="dys">अक्रियाशील <b>${m.dys}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
+ if(FLAGS.ongoing_work)h+=`<span class="m">कुल प्रगतिरत कार्य <b>${m.ongoing_work}</b></span>`;
+ if(FLAGS.labour_budget)h+=`<span class="m">लेबर बजट <b>${m.labour_budget}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
@@ -326,6 +344,8 @@ function metricChips(m,scope){
 function subChips(m){
  let h=`<span class="m blue">पंचायतें <b>${m.total}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
+ if(FLAGS.ongoing_work)h+=`<span class="m">कुल प्रगतिरत कार्य <b>${m.ongoing_work}</b></span>`;
+ if(FLAGS.labour_budget)h+=`<span class="m">लेबर बजट <b>${m.labour_budget}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
@@ -351,39 +371,32 @@ function syncKPIStates(){
 
 function setFilter(f){
  expanded.clear(); expandedEng.clear(); expandedSub.clear();
- if(activeFilter===f){
-  activeFilter=null;
- } else {
+ if(activeFilter===f){activeFilter=null;} else {
   activeFilter=f;
-  BLOCKS.forEach(b=>{
-   expanded.add(b.block);
-   b.engs.forEach(e=>{
-    const ek=b.block+"::"+e.engineer;
-    expandedEng.add(ek);
+  BLOCKS.forEach(b=>{expanded.add(b.block);
+   b.engs.forEach(e=>{const ek=b.block+"::"+e.engineer;expandedEng.add(ek);
     if(f==="wip"&&e.activeRows.length) expandedSub.add(ek+"::active");
-    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys");
-   });
-  });
- }
+    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys");});});}
  updateFilterBar(); syncKPIStates();
  renderBlocks(document.getElementById("search").value,false);
 }
 function clearFilter(){
- activeFilter=null;
- expanded.clear(); expandedEng.clear(); expandedSub.clear();
+ activeFilter=null;expanded.clear();expandedEng.clear();expandedSub.clear();
  updateFilterBar(); syncKPIStates();
  renderBlocks(document.getElementById("search").value,false);
 }
 
-/* ===== "प्रगति पर" कॉलम हटा दिया गया ===== */
+/* ===== टेबल कॉलम: labour_budget और ongoing_work जोड़े ===== */
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"labour",t:"नियोजित श्रृमिक"}];
- if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे MR"});
- if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
- if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
- if(FLAGS.sector)c.push({k:"sector",t:"सेक्टर"});
- if(FLAGS.mandays)c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
- if(FLAGS.budget)c.push({k:"budget",t:"श्रम बजट"});
+ if(FLAGS.ongoing_work) c.push({k:"ongoing_work",t:"कुल प्रगतिरत कार्य"});
+ if(FLAGS.labour_budget) c.push({k:"labour_budget",t:"लेबर बजट"});
+ if(FLAGS.ongoing) c.push({k:"ongoing",t:"चल रहे MR"});
+ if(FLAGS.ekyc) c.push({k:"ekyc",t:"बिना e‑KYC"});
+ if(FLAGS.mr) c.push({k:"mr",t:"कुल MR"});
+ if(FLAGS.sector) c.push({k:"sector",t:"सेक्टर"});
+ if(FLAGS.mandays) c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
+ if(FLAGS.budget) c.push({k:"budget",t:"श्रम बजट"});
  return c;
 }
 function panchRow(r,i){
@@ -391,15 +404,16 @@ function panchRow(r,i){
  let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
  visCols().forEach(c=>{
   if(c.k==="panchayat")return;
-  /* "प्रगति पर" कॉलम हटाया — अब सिर्फ बाकी कॉलम दिखेंगे */
-  if(c.k==="sector")cells+=`<td>${r.sector||'—'}</td>`;
-  else cells+=`<td>${r[c.k]}</td>`;});
+  if(c.k==="sector") cells+=`<td>${r.sector||'—'}</td>`;
+  else cells+=`<td>${r[c.k]}</td>`;
+ });
  return `<tr class="${dys?'dys':''}">${cells}</tr>`;
 }
 function tableHTML(rows){
  const vc=visCols();
  const head=`<tr><th>#</th>`+vc.map(c=>`<th>${c.t}</th>`).join("")+`</tr>`;
- const body=rows.length?rows.map((r,i)=>panchRow(r,i+1)).join(""):`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="mc">कोई पंचायत नहीं</td></tr>`;
+ const body=rows.length?rows.map((r,i)=>panchRow(r,i+1)).join("")
+  :`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="mc">कोई पंचायत नहीं</td></tr>`;
  return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
@@ -412,9 +426,11 @@ function renderKPI(k,engCount){
   {label:"कुल विकासखण्ड",val:BLOCKS.length,cls:""},
   {label:"कुल उपयंत्री",val:engCount,cls:"teal"}
  ];
- if(FLAGS.mandays)d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
- if(FLAGS.budget)d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
- if(FLAGS.mr)d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
+ if(FLAGS.ongoing_work) d.push({label:"कुल प्रगतिरत कार्य",val:k.ongoing_work,cls:""});
+ if(FLAGS.labour_budget) d.push({label:"लेबर बजट",val:k.labour_budget,cls:""});
+ if(FLAGS.mandays) d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
+ if(FLAGS.budget) d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
+ if(FLAGS.mr) d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
 
  document.getElementById("kpis").innerHTML=d.map(x=>{
   const clickAttr=x.clickable?`class="kpi ${x.cls} clickable" data-kpi-filter="${x.filter}"`:`class="kpi ${x.cls}"`;
@@ -430,16 +446,20 @@ function mk(id,type,data,extra){if(charts[id])charts[id].destroy();
   plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"Roboto",weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
   scales:type==="doughnut"?{}:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
   y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});}
+
 function renderTopCharts(){
  const names=BLOCKS.map(b=>b.block);
  mk("chBlockStatus","bar",{labels:names,datasets:[
   {label:"सक्रिय",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"अक्रियाशील",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
- if(FLAGS.mandays)ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
- if(FLAGS.budget)ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.ongoing_work) ds.push({label:"कुल प्रगतिरत कार्य",data:BLOCKS.map(b=>b.m.ongoing_work),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.labour_budget) ds.push({label:"लेबर बजट",data:BLOCKS.map(b=>b.m.labour_budget),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.mandays) ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(156,39,176,.75)",borderColor:"#7b1fa2",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.budget) ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(233,30,99,.75)",borderColor:"#c2185b",borderWidth:1,borderRadius:4,borderSkipped:false});
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
 }
+
 function buildEngChart(b){
  const id="chEng_"+san(b.block);const cv=document.getElementById(id);if(!cv)return;
  if(blockCharts[id])blockCharts[id].destroy();
@@ -518,6 +538,7 @@ function renderBlocks(filter,forceExpand){
  wrap.innerHTML=html;
  BLOCKS.forEach(b=>{if(forceExpand||expanded.has(b.block))buildEngChart(b);});
 }
+
 function matchRow(r,q){return r.panchayat.toLowerCase().includes(q)||r.engineer.toLowerCase().includes(q)||r.block.toLowerCase().includes(q)||(r.sector||"").toLowerCase().includes(q);}
 
 function stamp(){
