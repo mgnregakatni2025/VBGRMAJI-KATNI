@@ -239,6 +239,9 @@ let expandedEng=new Set();
 let expandedSub=new Set();
 let FLAGS={}, activeFilter=null;
 
+/* ===== डिटेक्टेड फ़ील्ड ट्रैकर — यह बताता है कौन-कौन सी फ़ील्डें डेटा में मिलीं ===== */
+let _detected = new Set();
+
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
 const clean=s=>String(s==null?"":s).trim();
 const up=s=>clean(s).toUpperCase();
@@ -249,26 +252,28 @@ function classify(h){
  h=up(h); if(!h) return null;
  if(/^COLUMN\d*$/i.test(h)) return null;
  if(/^UNNAMED/i.test(h)) return null;
- if(h.includes("BUDGET")) return "budget";
- if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
- if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
- if(h.includes("BLOCK")) return "block";
- if(h.includes("ENGG")||h.includes("ENGINEER")) return "engineer";
+ if(h.includes("BUDGET")){ _detected.add("budget"); return "budget"; }
+ if(h.includes("MANDAY")||h.includes("MAN DAY")){ _detected.add("mandays"); return "mandays"; }
+ if(h.includes("SECTOR")||h.includes("SECOTR")){ _detected.add("sector"); return "sector"; }
+ if(h.includes("BLOCK")){ _detected.add("block"); return "block"; }
+ if(h.includes("ENGG")||h.includes("ENGINEER")){ _detected.add("engineer"); return "engineer"; }
  if(h.includes("SNO")||h==="#"||h.includes("क्र")) return "sno";
  if(h.includes("TOTAL")&&h.includes("PANCHAYAT")) return "totalGP";
- if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")) return "wip";
- if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")) return "labour";
- /* ongoing_work को सबसे पहले चेक — ONGOING_WORK, ONGOING WORK, ONGOING कोई भी रूप */
- if(h==="ONGOING_WORK"||h==="ONGOING WORK"||h.includes("ONGOING_WORK")) return "ongoing";
- if(h.includes("ONGOING")) return "ongoing";
- if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")) return "ekyc";
- if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")) return "mr";
- if(h.includes("PANCHAYAT")||h.includes("पंचायत")) return "panchayat";
+ if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")){ _detected.add("wip"); return "wip"; }
+ if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")){ _detected.add("labour"); return "labour"; }
+ /* ===== ONGOING_WORK पहचान — सभी संभव रूप ===== */
+ if(h==="ONGOING_WORK"||h==="ONGOING WORKS"||h==="ONGOING WORK"||
+    h.includes("ONGOING_WORK")||h.includes("ONGOING WORK")||
+    h.includes("ONGOING")||h.includes("चल रहे कार्य")||h.includes("प्रगतिरत कार्य")){
+  _detected.add("ongoing"); return "ongoing"; }
+ if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")){ _detected.add("ekyc"); return "ekyc"; }
+ if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")){ _detected.add("mr"); return "mr"; }
+ if(h.includes("PANCHAYAT")||h.includes("पंचायत")){ _detected.add("panchayat"); return "panchayat"; }
  return null;
 }
 function parseLong(arr){
  let hi=-1;
- for(let i=0;i<Math.min(8,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
+ for(let i=0;i<Math.min(10,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
   const g=new Set(r.map(classify).filter(Boolean));if(g.size>=3){hi=i;break;}}
  if(hi<0) return [];
  const idx={};arr[hi].forEach((h,i)=>{const c=classify(h);if(c&&idx[c]===undefined)idx[c]=i;});
@@ -290,6 +295,7 @@ function rowFromObj(o){const r={panchayat:"",block:"—",engineer:"—",sector:"
  if(!r.block||up(r.block)==="#N/A")r.block="—"; if(!r.engineer||up(r.engineer)==="#N/A")r.engineer="—";
  if(up(r.sector)==="#N/A")r.sector=""; return r;}
 function normalize(input){
+ _detected.clear(); /* हर पार्स से पहले रीसेट */
  if(typeof input==="string")input=JSON.parse(input);
  if(input&&input.data)input=input.data;
  if(!Array.isArray(input))throw new Error("अमान्य डेटा");
@@ -304,12 +310,10 @@ function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCoun
   labour:sum(list,"labour"),mandays:sum(list,"mandays"),budget:sum(list,"budget"),
   mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc")};}
 function compute(d){
- /* ongoing को चेक करो — अगर कम से कम एक पंक्ति में यह फ़ील्ड मौजूद हो (भले ही 0 हो) तो दिखाओ */
- const hasOngoing=d.some(r=>r.ongoing>0);
- const hasOngoingAny=d.length>0; /* अगर data में यह field detect हुआ है तो हमेशा दिखाओ */
- FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
-  ongoing:hasOngoingAny, /* बदला: अब फ़ील्ड मौजूद होने पर ही दिखेगा */
-  ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
+ /* केवल वही FLAGS जो _detected में मिले — बाकी नहीं दिखेंगे */
+ FLAGS={mandays:_detected.has("mandays"),budget:_detected.has("budget"),mr:_detected.has("mr"),
+  ongoing:_detected.has("ongoing"),
+  ekyc:_detected.has("ekyc"),sector:_detected.has("sector")};
  const blocks=[];const bmap={};
  d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
  blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
@@ -348,45 +352,29 @@ function updateFilterBar(){
   ?"🔍 सक्रिय पंचायतें — सभी विकासखण्ड खुले, केवल चालू पंचायतें प्रदर्शित"
   :"🔍 अक्रियाशील पंचायतें — सभी विकासखण्ड खुले, केवल अक्रियाशील पंचायतें प्रदर्शित";
 }
-
 function syncKPIStates(){
  document.querySelectorAll(".kpi.clickable").forEach(el=>{
   el.classList.remove("kpi-active-wip","kpi-active-dys");
   if(activeFilter==="wip"&&el.dataset.kpiFilter==="wip") el.classList.add("kpi-active-wip");
   if(activeFilter==="dys"&&el.dataset.kpiFilter==="dys") el.classList.add("kpi-active-dys");
- });
-}
-
+ });}
 function setFilter(f){
  expanded.clear(); expandedEng.clear(); expandedSub.clear();
- if(activeFilter===f){
-  activeFilter=null;
- } else {
-  activeFilter=f;
-  BLOCKS.forEach(b=>{
-   expanded.add(b.block);
-   b.engs.forEach(e=>{
-    const ek=b.block+"::"+e.engineer;
-    expandedEng.add(ek);
+ if(activeFilter===f){ activeFilter=null; }
+ else { activeFilter=f;
+  BLOCKS.forEach(b=>{ expanded.add(b.block);
+   b.engs.forEach(e=>{ const ek=b.block+"::"+e.engineer; expandedEng.add(ek);
     if(f==="wip"&&e.activeRows.length) expandedSub.add(ek+"::active");
-    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys");
-   });
-  });
- }
+    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys"); }); }); }
  updateFilterBar(); syncKPIStates();
  renderBlocks(document.getElementById("search").value,false);
 }
-function clearFilter(){
- activeFilter=null;
- expanded.clear(); expandedEng.clear(); expandedSub.clear();
- updateFilterBar(); syncKPIStates();
- renderBlocks(document.getElementById("search").value,false);
-}
+function clearFilter(){ activeFilter=null; expanded.clear(); expandedEng.clear(); expandedSub.clear();
+ updateFilterBar(); syncKPIStates(); renderBlocks(document.getElementById("search").value,false); }
 
-/* ===== कॉलम क्रम: ongoing_work पंचायत के बगल में ===== */
+/* ===== कॉलम क्रम ===== */
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"}];
- /* कुल प्रगतिरत कार्य — पंचायत के तुरंत बाद */
  if(FLAGS.ongoing) c.push({k:"ongoing",t:"कुल प्रगतिरत कार्य"});
  c.push({k:"wip",t:"प्रगति पर"},{k:"labour",t:"नियोजित श्रृमिक"});
  if(FLAGS.ekyc) c.push({k:"ekyc",t:"बिना e‑KYC"});
@@ -425,7 +413,6 @@ function renderKPI(k,engCount){
  if(FLAGS.mandays)d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
  if(FLAGS.budget)d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
  if(FLAGS.mr)d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
-
  document.getElementById("kpis").innerHTML=d.map(x=>{
   const clickAttr=x.clickable?`class="kpi ${x.cls} clickable" data-kpi-filter="${x.filter}"`:`class="kpi ${x.cls}"`;
   let extraCls="";
@@ -534,7 +521,9 @@ function stamp(){
  const t=new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
  document.getElementById("updTime").textContent=t;
  document.getElementById("updChip").textContent="🔄 अपडेट: "+t;
- document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" विकासखण्ड लोड";
+ /* डिबग: कौन-कौन सी फ़ील्डें मिलीं */
+ const fields=Array.from(_detected).join(", ");
+ document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" विकासखण्ड लोड • फ़ील्डें: ["+fields+"]";
  try{localStorage.setItem(LS_UPD,t);}catch(e){}
 }
 
