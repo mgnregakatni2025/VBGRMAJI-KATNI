@@ -165,7 +165,6 @@
  tbody tr:nth-child(even){background:#fafbfc}
  tbody tr:nth-child(even):hover{background:rgba(13,71,161,.03)}
  tbody tr.dys{background:var(--red-l) !important} tbody tr.dys td{color:var(--red);font-weight:500}
- td.na{color:var(--muted);font-style:italic;font-weight:400}
  footer{background:linear-gradient(135deg,#f8f9fa,#fff);border-top:1px solid var(--line);
   margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:11.5px;letter-spacing:.2px}
  footer .ft-upd{color:var(--ink);font-weight:600}
@@ -314,17 +313,7 @@ function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCoun
   mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc"),
   labour_budget:sum(list,"labour_budget"),ongoing_work:sum(list,"ongoing_work")};}
 
-/* ===== इंजीनियर-लेवल: सिर्फ समरी रो से निकालो (चिप्स/केपीआई के लिए) ===== */
-function engLevelMetrics(rows){
- let lb=0, ow=0;
- rows.forEach(r=>{
-  if(r.labour_budget>0) lb=r.labour_budget;
-  if(r.ongoing_work>0) ow=r.ongoing_work;
- });
- return {labour_budget:lb, ongoing_work:ow};
-}
-
-/* ===== क्या कोई भी पंचायत रो में अपनी वैल्यू है? ===== */
+/* क्या कोई भी पंचायत रो में अपनी वैल्यू है? */
 function hasPerPanchVal(rows, key){
  return rows.some(r=>r[key]>0);
 }
@@ -332,7 +321,6 @@ function hasPerPanchVal(rows, key){
 function compute(d){
  FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
   ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—"),
-  /* इन दोनों को हमेशा चेक करो — कहीं भी हो तो कॉलम दिखाओ */
   labour_budget:d.some(r=>r.labour_budget>0),ongoing_work:d.some(r=>r.ongoing_work>0)};
  const blocks=[];const bmap={};
  d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
@@ -342,38 +330,30 @@ function compute(d){
   b.engs.forEach(e=>{e.m=metrics(e.rows);
    e.activeRows=e.rows.filter(r=>r.wip>0);e.dysRows=e.rows.filter(r=>r.wip===0);
    e.activeM=metrics(e.activeRows);e.dysM=metrics(e.dysRows);
-   /* इंजीनियर-लेवल वैल्यू (केवल चिप्स के लिए) */
-   e.engLvl=engLevelMetrics(e.rows);
-   /* क्या पंचायत-स्तर पर भी अलग वैल्यू है? */
+   /* क्या पंचायत-स्तर पर अलग वैल्यू है? */
    e.hasPerPanchOW=hasPerPanchVal(e.rows,"ongoing_work");
    e.hasPerPanchLB=hasPerPanchVal(e.rows,"labour_budget");});});
  return {k:metrics(d),blocks,engCount:new Set(d.map(r=>r.engineer)).size};
 }
 
-/* ===== मेट्रिक चिप्स: हमेशा इंजीनियर-लेवल वैल्यू दिखाओ ===== */
-function metricChips(m,scope,engLvl){
+/* ===== मेट्रिक चिप्स: कुल प्रगतिरत कार्य नहीं दिखाएंगे ===== */
+function metricChips(m,scope){
  let h=`<span class="m blue">कुल <b>${m.total}</b></span>`;
  const wipCls="m ok filter-chip"+(activeFilter==="wip"?" active":"");
  const dysCls="m warn filter-chip"+(activeFilter==="dys"?" active":"");
  h+=`<span class="${wipCls}" data-filter="wip">सक्रिय <b>${m.wip}</b></span>`;
  h+=`<span class="${dysCls}" data-filter="dys">अक्रियाशील <b>${m.dys}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
- const ow=engLvl?engLvl.ongoing_work:0;
- const lb=engLvl?engLvl.labour_budget:0;
- if(ow>0)h+=`<span class="m">कुल प्रगतिरत कार्य <b>${ow}</b></span>`;
- if(lb>0)h+=`<span class="m">लेबर बजट <b>${lb}</b></span>`;
+ /* कुल प्रगतिरत कार्य — हटाया */
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
  return h;
 }
-function subChips(m,engLvl){
+function subChips(m){
  let h=`<span class="m blue">पंचायतें <b>${m.total}</b></span>`;
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
- const ow=engLvl?engLvl.ongoing_work:0;
- const lb=engLvl?engLvl.labour_budget:0;
- if(ow>0)h+=`<span class="m">कुल प्रगतिरत कार्य <b>${ow}</b></span>`;
- if(lb>0)h+=`<span class="m">लेबर बजट <b>${lb}</b></span>`;
+ /* कुल प्रगतिरत कार्य — हटाया */
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
  if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
@@ -417,7 +397,6 @@ function clearFilter(){
 /* ===== टेबल कॉलम: सिर्फ तब दिखाओ जब पंचायत-स्तर पर वैल्यू हो ===== */
 function visCols(engInfo){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"labour",t:"नियोजित श्रृमिक"}];
- /* इंजीनियर-लेवल वैल्यू है, लेकिन क्या पंचायत-स्तर पर भी है? */
  const hasOW=engInfo?engInfo.hasPerPanchOW:false;
  const hasLB=engInfo?engInfo.hasPerPanchLB:false;
  if(hasOW) c.push({k:"ongoing_work",t:"कुल प्रगतिरत कार्य"});
@@ -431,17 +410,13 @@ function visCols(engInfo){
  return c;
 }
 
-/* ===== रो: कोई प्रॉपेगेशन नहीं, सिर्फ अपनी वैल्यू ===== */
 function panchRow(r,i,vc){
  const dys=r.wip===0;
  let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
  vc.forEach(c=>{
   if(c.k==="panchayat")return;
-  if(c.k==="sector"){
-   cells+=`<td>${r.sector||'—'}</td>`;
-  } else {
-   cells+=`<td>${r[c.k]}</td>`;
-  }
+  if(c.k==="sector") cells+=`<td>${r.sector||'—'}</td>`;
+  else cells+=`<td>${r[c.k]}</td>`;
  });
  return `<tr class="${dys?'dys':''}">${cells}</tr>`;
 }
@@ -454,6 +429,7 @@ function tableHTML(rows,engInfo){
  return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
+/* ===== KPI: कुल प्रगतिरत कार्य हटाया ===== */
 function renderKPI(k,engCount){
  const d=[
   {label:"कुल पंचायतें",val:k.total,cls:""},
@@ -463,8 +439,7 @@ function renderKPI(k,engCount){
   {label:"कुल विकासखण्ड",val:BLOCKS.length,cls:""},
   {label:"कुल उपयंत्री",val:engCount,cls:"teal"}
  ];
- if(k.ongoing_work>0) d.push({label:"कुल प्रगतिरत कार्य",val:k.ongoing_work,cls:""});
- if(k.labour_budget>0) d.push({label:"लेबर बजट",val:k.labour_budget,cls:""});
+ /* कुल प्रगतिरत कार्य — हटाया */
  if(FLAGS.mandays) d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
  if(FLAGS.budget) d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
  if(FLAGS.mr) d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
@@ -484,13 +459,14 @@ function mk(id,type,data,extra){if(charts[id])charts[id].destroy();
   scales:type==="doughnut"?{}:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
   y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});}
 
+/* ===== चार्ट: कुल प्रगतिरत कार्य हटाया ===== */
 function renderTopCharts(){
  const names=BLOCKS.map(b=>b.block);
  mk("chBlockStatus","bar",{labels:names,datasets:[
   {label:"सक्रिय",data:BLOCKS.map(b=>b.m.wip),backgroundColor:"rgba(46,125,50,.75)",borderColor:"#2e7d32",borderWidth:1,borderRadius:4,borderSkipped:false},
   {label:"अक्रियाशील",data:BLOCKS.map(b=>b.m.dys),backgroundColor:"rgba(198,40,40,.75)",borderColor:"#c62828",borderWidth:1,borderRadius:4,borderSkipped:false}]},{});
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
- if(FLAGS.ongoing_work) ds.push({label:"कुल प्रगतिरत कार्य",data:BLOCKS.map(b=>b.m.ongoing_work),backgroundColor:"rgba(0,105,92,.75)",borderColor:"#00695c",borderWidth:1,borderRadius:4,borderSkipped:false});
+ /* कुल प्रगतिरत कार्य — हटाया */
  if(FLAGS.labour_budget) ds.push({label:"लेबर बजट",data:BLOCKS.map(b=>b.m.labour_budget),backgroundColor:"rgba(245,127,23,.75)",borderColor:"#f57f17",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.mandays) ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(156,39,176,.75)",borderColor:"#7b1fa2",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.budget) ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(233,30,99,.75)",borderColor:"#c2185b",borderWidth:1,borderRadius:4,borderSkipped:false});
@@ -534,7 +510,7 @@ function renderBlocks(filter,forceExpand){
       <span class="chev">▶</span>
       <span class="sub-row-icon">✅</span>
       <span class="sub-row-label active-label">काम चालू (Work in Progress) — <b>${ar.length}</b> पंचायतें</span>
-      <span class="sub-row-metrics">${subChips(e.activeM,e.engLvl)}</span>
+      <span class="sub-row-metrics">${subChips(e.activeM)}</span>
      </div>
      <div class="sub-row-body">${tableHTML(ar,e)}</div>
     </div>`;}
@@ -545,7 +521,7 @@ function renderBlocks(filter,forceExpand){
       <span class="chev">▶</span>
       <span class="sub-row-icon">❌</span>
       <span class="sub-row-label dys-label">अक्रियाशील — <b>${dr.length}</b> पंचायतें</span>
-      <span class="sub-row-metrics">${subChips(e.dysM,e.engLvl)}</span>
+      <span class="sub-row-metrics">${subChips(e.dysM)}</span>
      </div>
      <div class="sub-row-body">${tableHTML(dr,e)}</div>
     </div>`;}
@@ -554,7 +530,7 @@ function renderBlocks(filter,forceExpand){
       <span class="chev">▶</span>
       <span class="eng-row-name">👷 ${e.engineer}</span>
       ${e.sector?`<span class="eng-row-sec">• सेक्टर: ${e.sector}</span>`:""}
-      <span class="eng-row-metrics">${metricChips(e.m,"eng",e.engLvl)}</span>
+      <span class="eng-row-metrics">${metricChips(e.m,"eng")}</span>
      </div>
      <div class="eng-row-body">${subHTML}</div>
     </div>`;});
@@ -565,7 +541,7 @@ function renderBlocks(filter,forceExpand){
    <div class="block-head" data-toggle="${b.block}">
     <span class="chev">▶</span>
     <span class="blk-name">🧱 ${b.block}</span>
-    <span class="blk-metrics">${metricChips(b.m,"top",null)}</span>
+    <span class="blk-metrics">${metricChips(b.m,"top")}</span>
    </div>
    <div class="block-body">
     <div class="eng-ch-wrap"><h4>उपयंत्री‑वार चार्ट — ${b.block}</h4><div class="ch"><canvas id="chEng_${san(b.block)}"></canvas></div></div>
