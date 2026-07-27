@@ -39,6 +39,8 @@
   border:1px solid rgba(255,255,255,.2);letter-spacing:.2px}
  .wrap{max-width:1320px;margin:0 auto;padding:clamp(14px,3vw,24px)}
  #loadNote{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:500}
+
+ /* ===== KPI कार्ड ===== */
  .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin-bottom:24px}
  .kpi{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:18px 18px 16px;
   position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid rgba(0,0,0,.04)}
@@ -55,6 +57,8 @@
   background:linear-gradient(135deg,var(--ink),#37474f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text}
  .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+ /* ===== क्लिक-योग्य KPI (सक्रिय + अक्रियाशील) ===== */
  .kpi.clickable{cursor:pointer;user-select:none}
  .kpi.clickable::after{content:"देखें →";position:absolute;bottom:10px;right:14px;
   font-size:9.5px;font-weight:700;color:var(--muted);opacity:0;transition:opacity .2s,transform .2s;transform:translateX(-4px);letter-spacing:.3px}
@@ -64,6 +68,7 @@
  .kpi.clickable.kpi-active-dys{border-color:rgba(198,40,40,.4);box-shadow:0 0 0 3px rgba(198,40,40,.12),var(--sh1)}
  .kpi.clickable.kpi-active-wip::after{opacity:1;color:var(--grn);transform:translateX(0);content:"✕ बंद करें"}
  .kpi.clickable.kpi-active-dys::after{opacity:1;color:var(--red);transform:translateX(0);content:"✕ बंद करें"}
+
  .stitle{font-size:clamp(14px,3.2vw,17px);font-weight:700;margin:28px 0 14px;color:var(--ink);
   display:flex;align-items:center;gap:10px}
  .stitle .ic{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
@@ -152,7 +157,7 @@
  .eng-ch-wrap h4{margin:0 0 4px;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
  .eng-ch-wrap .ch{position:relative;height:150px}
  .tw{overflow-x:auto;border-radius:6px;border:1px solid var(--line)}
- table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+ table{width:100%;border-collapse:collapse;font-size:12px;min-width:480px}
  thead th{background:linear-gradient(180deg,#f8f9fa,#f3f4f6);color:var(--muted);text-align:left;
   padding:9px 12px;font-weight:600;white-space:nowrap;border-bottom:2px solid var(--line);
   font-size:11px;letter-spacing:.4px;text-transform:uppercase}
@@ -162,9 +167,6 @@
  tbody tr:nth-child(even){background:#fafbfc}
  tbody tr:nth-child(even):hover{background:rgba(13,71,161,.03)}
  tbody tr.dys{background:var(--red-l) !important} tbody tr.dys td{color:var(--red);font-weight:500}
- .st{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
- .st.a{background:var(--grn-l);color:var(--grn)} .st.d{background:var(--red-l);color:var(--red)}
- .mc{color:var(--muted)}
  footer{background:linear-gradient(135deg,#f8f9fa,#fff);border-top:1px solid var(--line);
   margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:11.5px;letter-spacing:.2px}
  footer .ft-upd{color:var(--ink);font-weight:600}
@@ -235,9 +237,6 @@ let expandedEng=new Set();
 let expandedSub=new Set();
 let FLAGS={}, activeFilter=null;
 
-/* डिटेक्टेड फ़ील्ड ट्रैकर */
-let _detected = new Set();
-
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/,/g,""));return isNaN(n)?0:n;};
 const clean=s=>String(s==null?"":s).trim();
 const up=s=>clean(s).toUpperCase();
@@ -248,40 +247,24 @@ function classify(h){
  h=up(h); if(!h) return null;
  if(/^COLUMN\d*$/i.test(h)) return null;
  if(/^UNNAMED/i.test(h)) return null;
- if(h.includes("BUDGET")){ _detected.add("budget"); return "budget"; }
- if(h.includes("MANDAY")||h.includes("MAN DAY")){ _detected.add("mandays"); return "mandays"; }
- if(h.includes("SECTOR")||h.includes("SECOTR")){ _detected.add("sector"); return "sector"; }
- if(h.includes("BLOCK")){ _detected.add("block"); return "block"; }
- if(h.includes("ENGG")||h.includes("ENGINEER")){ _detected.add("engineer"); return "engineer"; }
+ if(h.includes("BUDGET")) return "budget";
+ if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
+ if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
+ if(h.includes("BLOCK")) return "block";
+ if(h.includes("ENGG")||h.includes("ENGINEER")) return "engineer";
  if(h.includes("SNO")||h==="#"||h.includes("क्र")) return "sno";
  if(h.includes("TOTAL")&&h.includes("PANCHAYAT")) return "totalGP";
- if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")){ _detected.add("wip"); return "wip"; }
- if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")){ _detected.add("labour"); return "labour"; }
-
- /* ★ सबसे पहले: "No. of Ongoing Works for which Muster Rolls (MRs) have been Issued"
-    इसमें ONGOING + MUSTER ROLL + ISSUED तीनों होते हैं — इसे mrIssued मानो */
- if((h.includes("ONGOING")||h.includes("प्रगतिरत")) && (h.includes("ISSUED")||h.includes("जारी"))){
-  _detected.add("mrIssued"); return "mrIssued"; }
-
- /* ★ दूसरा: Ongoing_Work = कुल प्रगतिरत कार्य */
- if(h==="ONGOING_WORK"||h==="ONGOING WORKS"||h==="ONGOING WORK"||
-    h.includes("ONGOING_WORK")||h.includes("ONGOING WORK")){
-  _detected.add("ongoing"); return "ongoing"; }
-
- /* ★ तीसरा: generic ONGOING catch */
- if(h.includes("ONGOING")||h.includes("चल रहे कार्य")||h.includes("प्रगतिरत कार्य")){
-  _detected.add("ongoing"); return "ongoing"; }
-
- if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")){ _detected.add("ekyc"); return "ekyc"; }
- /* ★ कुल MR — यह सबसे बाद में ताकि ऊपर वाले special cases पहले catch हों */
- if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")){ _detected.add("mr"); return "mr"; }
- if(h.includes("PANCHAYAT")||h.includes("पंचायत")){ _detected.add("panchayat"); return "panchayat"; }
+ if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")) return "wip";
+ if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")) return "labour";
+ if(h.includes("ONGOING")) return "ongoing";
+ if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")) return "ekyc";
+ if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")) return "mr";
+ if(h.includes("PANCHAYAT")||h.includes("पंचायत")) return "panchayat";
  return null;
 }
-
 function parseLong(arr){
  let hi=-1;
- for(let i=0;i<Math.min(10,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
+ for(let i=0;i<Math.min(6,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
   const g=new Set(r.map(classify).filter(Boolean));if(g.size>=3){hi=i;break;}}
  if(hi<0) return [];
  const idx={};arr[hi].forEach((h,i)=>{const c=classify(h);if(c&&idx[c]===undefined)idx[c]=i;});
@@ -294,17 +277,15 @@ function parseLong(arr){
   let sec=clean(get("sector"));if(up(sec)==="#N/A"||up(sec)==="N/A")sec="";
   out.push({panchayat:p,block:blk,engineer:eng,sector:sec,
    totalGP:num(get("totalGP")),wip:num(get("wip")),labour:num(get("labour")),
-   ongoing:num(get("ongoing")),mrIssued:num(get("mrIssued")),
-   ekyc:num(get("ekyc")),mr:num(get("mr")),
+   ongoing:num(get("ongoing")),ekyc:num(get("ekyc")),mr:num(get("mr")),
    mandays:num(get("mandays")),budget:num(get("budget"))});}
  return out;
 }
-function rowFromObj(o){const r={panchayat:"",block:"—",engineer:"—",sector:"",totalGP:0,wip:0,labour:0,ongoing:0,mrIssued:0,ekyc:0,mr:0,mandays:0,budget:0};
+function rowFromObj(o){const r={panchayat:"",block:"—",engineer:"—",sector:"",totalGP:0,wip:0,labour:0,ongoing:0,ekyc:0,mr:0,mandays:0,budget:0};
  for(const k in o){const c=classify(k);if(c)r[c]=(["panchayat","engineer","block","sector"].includes(c))?clean(o[k]):num(o[k]);}
  if(!r.block||up(r.block)==="#N/A")r.block="—"; if(!r.engineer||up(r.engineer)==="#N/A")r.engineer="—";
  if(up(r.sector)==="#N/A")r.sector=""; return r;}
 function normalize(input){
- _detected.clear();
  if(typeof input==="string")input=JSON.parse(input);
  if(input&&input.data)input=input.data;
  if(!Array.isArray(input))throw new Error("अमान्य डेटा");
@@ -317,11 +298,10 @@ function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
 function dysCount(list){return list.filter(r=>r.wip===0).length;}
 function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCount(list),
   labour:sum(list,"labour"),mandays:sum(list,"mandays"),budget:sum(list,"budget"),
-  mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),mrIssued:sum(list,"mrIssued"),ekyc:sum(list,"ekyc")};}
+  mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc")};}
 function compute(d){
- FLAGS={mandays:_detected.has("mandays"),budget:_detected.has("budget"),mr:_detected.has("mr"),
-  ongoing:_detected.has("ongoing"),mrIssued:_detected.has("mrIssued"),
-  ekyc:_detected.has("ekyc"),sector:_detected.has("sector")};
+ FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
+  ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
  const blocks=[];const bmap={};
  d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
  blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
@@ -360,47 +340,58 @@ function updateFilterBar(){
   ?"🔍 सक्रिय पंचायतें — सभी विकासखण्ड खुले, केवल चालू पंचायतें प्रदर्शित"
   :"🔍 अक्रियाशील पंचायतें — सभी विकासखण्ड खुले, केवल अक्रियाशील पंचायतें प्रदर्शित";
 }
+
 function syncKPIStates(){
  document.querySelectorAll(".kpi.clickable").forEach(el=>{
   el.classList.remove("kpi-active-wip","kpi-active-dys");
   if(activeFilter==="wip"&&el.dataset.kpiFilter==="wip") el.classList.add("kpi-active-wip");
   if(activeFilter==="dys"&&el.dataset.kpiFilter==="dys") el.classList.add("kpi-active-dys");
- });}
+ });
+}
+
 function setFilter(f){
  expanded.clear(); expandedEng.clear(); expandedSub.clear();
- if(activeFilter===f){ activeFilter=null; }
- else { activeFilter=f;
-  BLOCKS.forEach(b=>{ expanded.add(b.block);
-   b.engs.forEach(e=>{ const ek=b.block+"::"+e.engineer; expandedEng.add(ek);
+ if(activeFilter===f){
+  activeFilter=null;
+ } else {
+  activeFilter=f;
+  BLOCKS.forEach(b=>{
+   expanded.add(b.block);
+   b.engs.forEach(e=>{
+    const ek=b.block+"::"+e.engineer;
+    expandedEng.add(ek);
     if(f==="wip"&&e.activeRows.length) expandedSub.add(ek+"::active");
-    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys"); }); }); }
+    if(f==="dys"&&e.dysRows.length) expandedSub.add(ek+"::dys");
+   });
+  });
+ }
  updateFilterBar(); syncKPIStates();
  renderBlocks(document.getElementById("search").value,false);
 }
-function clearFilter(){ activeFilter=null; expanded.clear(); expandedEng.clear(); expandedSub.clear;
- updateFilterBar(); syncKPIStates(); renderBlocks(document.getElementById("search").value,false); }
+function clearFilter(){
+ activeFilter=null;
+ expanded.clear(); expandedEng.clear(); expandedSub.clear();
+ updateFilterBar(); syncKPIStates();
+ renderBlocks(document.getElementById("search").value,false);
+}
 
-/* ===== कॉलम क्रम: प्रगति पर हटाया, mrIssued पहले, ongoing दूसरा ===== */
+/* ===== "प्रगति पर" कॉलम हटा दिया गया ===== */
 function visCols(){
- const c=[{k:"panchayat",t:"पंचायत"}];
- if(FLAGS.mrIssued) c.push({k:"mrIssued",t:"आज दिनांक को प्रगतिरत कार्य"});
- if(FLAGS.ongoing) c.push({k:"ongoing",t:"कुल प्रगतिरत कार्य"});
- /* ध्यान दें: wip को यहाँ नहीं रखा — सिर्फ DYS detect के लिए internal है */
- c.push({k:"labour",t:"नियोजित श्रृमिक"});
- if(FLAGS.ekyc) c.push({k:"ekyc",t:"बिना e‑KYC"});
- if(FLAGS.mr) c.push({k:"mr",t:"कुल MR"});
- if(FLAGS.sector) c.push({k:"sector",t:"सेक्टर"});
- if(FLAGS.mandays) c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
- if(FLAGS.budget) c.push({k:"budget",t:"श्रम बजट"});
+ const c=[{k:"panchayat",t:"पंचायत"},{k:"labour",t:"नियोजित श्रृमिक"}];
+ if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे MR"});
+ if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
+ if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
+ if(FLAGS.sector)c.push({k:"sector",t:"सेक्टर"});
+ if(FLAGS.mandays)c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
+ if(FLAGS.budget)c.push({k:"budget",t:"श्रम बजट"});
  return c;
 }
 function panchRow(r,i){
  const dys=r.wip===0;
- /* wip टेबल में नहीं दिखेगा, लेकिन DYS highlighting अभी भी काम करेगा */
  let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
  visCols().forEach(c=>{
   if(c.k==="panchayat")return;
-  /* wip की special treatment हटाई — अब टेबल में wip नहीं */
+  /* "प्रगति पर" कॉलम हटाया — अब सिर्फ बाकी कॉलम दिखेंगे */
   if(c.k==="sector")cells+=`<td>${r.sector||'—'}</td>`;
   else cells+=`<td>${r[c.k]}</td>`;});
  return `<tr class="${dys?'dys':''}">${cells}</tr>`;
@@ -424,6 +415,7 @@ function renderKPI(k,engCount){
  if(FLAGS.mandays)d.push({label:"कुल श्रृजित मा0दिवस",val:k.mandays,cls:""});
  if(FLAGS.budget)d.push({label:"कुल श्रम बजट",val:k.budget,cls:""});
  if(FLAGS.mr)d.push({label:"कुल Muster Rolls",val:k.mr,cls:""});
+
  document.getElementById("kpis").innerHTML=d.map(x=>{
   const clickAttr=x.clickable?`class="kpi ${x.cls} clickable" data-kpi-filter="${x.filter}"`:`class="kpi ${x.cls}"`;
   let extraCls="";
@@ -458,7 +450,7 @@ function buildEngChart(b){
   options:{responsive:true,maintainAspectRatio:false,
    plugins:{legend:{position:"bottom",labels:{font:{size:10,weight:"500"},boxWidth:10,padding:8,usePointStyle:true,pointStyle:"rectRounded"}}},
    scales:{x:{ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{display:false},border:{display:false}},
-  y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});});
+  y:{beginAtZero:true,ticks:{font:{size:9,weight:"500"},color:"#9e9e9e"},grid:{color:"rgba(0,0,0,.04)",drawBorder:false},border:{display:false}}}}});
 }
 
 function renderBlocks(filter,forceExpand){
@@ -532,8 +524,7 @@ function stamp(){
  const t=new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
  document.getElementById("updTime").textContent=t;
  document.getElementById("updChip").textContent="🔄 अपडेट: "+t;
- const fields=Array.from(_detected).join(", ");
- document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" विकासखण्ड लोड • फ़ील्डें: ["+fields+"]";
+ document.getElementById("loadNote").textContent="✅ "+DATA.length+" पंचायतें • "+BLOCKS.length+" विकासखण्ड लोड";
  try{localStorage.setItem(LS_UPD,t);}catch(e){}
 }
 
