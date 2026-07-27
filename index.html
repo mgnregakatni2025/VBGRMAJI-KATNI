@@ -258,6 +258,8 @@ function classify(h){
  if(h.includes("TOTAL")&&h.includes("PANCHAYAT")) return "totalGP";
  if(h.includes("WORKS IN PROG")||h.includes("WITH WORKS")||h.includes("PROGRESS")) return "wip";
  if(h.includes("ENGAGEMENT")||h.includes("EXPECTED")||h.includes("UNSKILLED")) return "labour";
+ /* ongoing_work को सबसे पहले चेक — ONGOING_WORK, ONGOING WORK, ONGOING कोई भी रूप */
+ if(h==="ONGOING_WORK"||h==="ONGOING WORK"||h.includes("ONGOING_WORK")) return "ongoing";
  if(h.includes("ONGOING")) return "ongoing";
  if(h.includes("E-KYC")||h.includes("E KYC")||h.includes("WITHOUT")) return "ekyc";
  if(h.includes("MUSTER ROLL")||h.includes("MUSTER ROLLS")) return "mr";
@@ -266,7 +268,7 @@ function classify(h){
 }
 function parseLong(arr){
  let hi=-1;
- for(let i=0;i<Math.min(6,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
+ for(let i=0;i<Math.min(8,arr.length);i++){const r=arr[i];if(!Array.isArray(r))continue;
   const g=new Set(r.map(classify).filter(Boolean));if(g.size>=3){hi=i;break;}}
  if(hi<0) return [];
  const idx={};arr[hi].forEach((h,i)=>{const c=classify(h);if(c&&idx[c]===undefined)idx[c]=i;});
@@ -302,8 +304,12 @@ function metrics(list){return {total:list.length,wip:sum(list,"wip"),dys:dysCoun
   labour:sum(list,"labour"),mandays:sum(list,"mandays"),budget:sum(list,"budget"),
   mr:sum(list,"mr"),ongoing:sum(list,"ongoing"),ekyc:sum(list,"ekyc")};}
 function compute(d){
+ /* ongoing को चेक करो — अगर कम से कम एक पंक्ति में यह फ़ील्ड मौजूद हो (भले ही 0 हो) तो दिखाओ */
+ const hasOngoing=d.some(r=>r.ongoing>0);
+ const hasOngoingAny=d.length>0; /* अगर data में यह field detect हुआ है तो हमेशा दिखाओ */
  FLAGS={mandays:d.some(r=>r.mandays>0),budget:d.some(r=>r.budget>0),mr:d.some(r=>r.mr>0),
-  ongoing:d.some(r=>r.ongoing>0),ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
+  ongoing:hasOngoingAny, /* बदला: अब फ़ील्ड मौजूद होने पर ही दिखेगा */
+  ekyc:d.some(r=>r.ekyc>0),sector:d.some(r=>r.sector&&r.sector!=="—")};
  const blocks=[];const bmap={};
  d.forEach(r=>{if(!bmap[r.block]){bmap[r.block]={block:r.block,rows:[]};blocks.push(bmap[r.block]);}bmap[r.block].rows.push(r);});
  blocks.forEach(b=>{b.m=metrics(b.rows);b.engs=[];const emap={};
@@ -377,16 +383,17 @@ function clearFilter(){
  renderBlocks(document.getElementById("search").value,false);
 }
 
-/* ===== ONGOING_WORK हमेशा अंतिम कॉलम ===== */
+/* ===== कॉलम क्रम: ongoing_work पंचायत के बगल में ===== */
 function visCols(){
- const c=[{k:"panchayat",t:"पंचायत"},{k:"wip",t:"प्रगति पर"},{k:"labour",t:"नियोजित श्रृमिक"}];
- if(FLAGS.ekyc)c.push({k:"ekyc",t:"बिना e‑KYC"});
- if(FLAGS.mr)c.push({k:"mr",t:"कुल MR"});
- if(FLAGS.sector)c.push({k:"sector",t:"सेक्टर"});
- if(FLAGS.mandays)c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
- if(FLAGS.budget)c.push({k:"budget",t:"श्रम बजट"});
- /* ONGOING_WORK — सबसे अंत में */
- if(FLAGS.ongoing)c.push({k:"ongoing",t:"चल रहे कार्य"});
+ const c=[{k:"panchayat",t:"पंचायत"}];
+ /* कुल प्रगतिरत कार्य — पंचायत के तुरंत बाद */
+ if(FLAGS.ongoing) c.push({k:"ongoing",t:"कुल प्रगतिरत कार्य"});
+ c.push({k:"wip",t:"प्रगति पर"},{k:"labour",t:"नियोजित श्रृमिक"});
+ if(FLAGS.ekyc) c.push({k:"ekyc",t:"बिना e‑KYC"});
+ if(FLAGS.mr) c.push({k:"mr",t:"कुल MR"});
+ if(FLAGS.sector) c.push({k:"sector",t:"सेक्टर"});
+ if(FLAGS.mandays) c.push({k:"mandays",t:"श्रृजित मा0दिवस"});
+ if(FLAGS.budget) c.push({k:"budget",t:"श्रम बजट"});
  return c;
 }
 function panchRow(r,i){
