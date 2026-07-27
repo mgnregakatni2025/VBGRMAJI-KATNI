@@ -39,7 +39,6 @@
   border:1px solid rgba(255,255,255,.2);letter-spacing:.2px}
  .wrap{max-width:1320px;margin:0 auto;padding:clamp(14px,3vw,24px)}
  #loadNote{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:500}
-
  .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin-bottom:24px}
  .kpi{background:var(--card);border-radius:var(--r1);box-shadow:var(--sh1);padding:18px 18px 16px;
   position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid rgba(0,0,0,.04)}
@@ -56,7 +55,6 @@
   background:linear-gradient(135deg,var(--ink),#37474f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text}
  .kpi .l{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
-
  .kpi.clickable{cursor:pointer;user-select:none}
  .kpi.clickable::after{content:"देखें →";position:absolute;bottom:10px;right:14px;
   font-size:9.5px;font-weight:700;color:var(--muted);opacity:0;transition:opacity .2s,transform .2s;transform:translateX(-4px);letter-spacing:.3px}
@@ -66,7 +64,6 @@
  .kpi.clickable.kpi-active-dys{border-color:rgba(198,40,40,.4);box-shadow:0 0 0 3px rgba(198,40,40,.12),var(--sh1)}
  .kpi.clickable.kpi-active-wip::after{opacity:1;color:var(--grn);transform:translateX(0);content:"✕ बंद करें"}
  .kpi.clickable.kpi-active-dys::after{opacity:1;color:var(--red);transform:translateX(0);content:"✕ बंद करें"}
-
  .stitle{font-size:clamp(14px,3.2vw,17px);font-weight:700;margin:28px 0 14px;color:var(--ink);
   display:flex;align-items:center;gap:10px}
  .stitle .ic{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
@@ -241,15 +238,20 @@ const up=s=>clean(s).toUpperCase();
 const san=s=>(s||"x").toString().replace(/[^a-zA-Z0-9]/g,"_");
 function isJunkPanch(p){const u=up(p);return !u||u==="TOTAL"||u==="PANCHAYAT"||u==="PANCHAYATS"||u==="अक्रियाशील"||/^\d+$/.test(u)||/^\d+\s+\d+$/.test(u);}
 
-/* ===== classify: LABOUR_BUDGET और ONGOING_WORK को सामान्य से पहले पकड़ो ===== */
+/* ===== classify: सभी विशेष चिह्न हटाकर तुलना — कोई वेरिएंट नहीं छूटेगा ===== */
 function classify(h){
  h=up(h); if(!h) return null;
  if(/^COLUMN\d*$/i.test(h)) return null;
  if(/^UNNAMED/i.test(h)) return null;
- /* विशिष्ट पहचान — सामान्य से पहले रखो ताकि ओवरलैप न हो */
- if(h.includes("LABOUR_BUDGET")||h==="LABOUR BUDGET"||h==="LEBOR_BUDGET"||h==="LEBOR BUDGET") return "labour_budget";
- if(h.includes("ONGOING_WORK")||h==="ONGOING WORK"||h==="ONGOING WORKS"||h.includes("प्रगतिरत")) return "ongoing_work";
- /* बाकी सामान्य पहचान */
+
+ /* सभी नॉन-अल्फान्यूमेरिक हटाकर तुलना — Labour_Budget, Labour Budget, LabourBudget सब कैच */
+ const hc=h.replace(/[^A-Z0-9]/g,"");
+
+ /* === सबसे विशिष्ट पहचान (ऊपर) === */
+ if(hc.includes("LABOURBUDGET")||hc.includes("LEBORBUDGET")) return "labour_budget";
+ if(hc.includes("ONGOINGWORK")||hc.includes("प्रगतिरत")) return "ongoing_work";
+
+ /* === सामान्य पहचान (नीचे) === */
  if(h.includes("BUDGET")) return "budget";
  if(h.includes("MANDAY")||h.includes("MAN DAY")) return "mandays";
  if(h.includes("SECTOR")||h.includes("SECOTR")) return "sector";
@@ -386,7 +388,7 @@ function clearFilter(){
  renderBlocks(document.getElementById("search").value,false);
 }
 
-/* ===== टेबल कॉलम: labour_budget और ongoing_work जोड़े ===== */
+/* ===== टेबल कॉलम: पंचायत रो में labour_budget और ongoing_work ===== */
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"labour",t:"नियोजित श्रृमिक"}];
  if(FLAGS.ongoing_work) c.push({k:"ongoing_work",t:"कुल प्रगतिरत कार्य"});
