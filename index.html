@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>aविकासखण्ड‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
+<title>विकासखण्ड‑वार पंचायत डैशबोर्ड — जिला कटनी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -378,6 +378,19 @@ function parseWorkArr(arr){
   const get=k=>idx[k]!==undefined?r[idx[k]]:"";
   const p=clean(get("panchayat"));if(!p)continue;
   let blk=get("block")?clean(get("block")):"";
+  // If block column is empty, try to get from other columns
+  if(!blk && idx["block"] === undefined) {
+    // Try to find any column that might contain block name
+    for(let j=0; j<r.length; j++) {
+      const val = clean(r[j]);
+      if(val && (val.toUpperCase().includes("BADWARA") || val.toUpperCase().includes("BADWAR") || 
+         val.toUpperCase().includes("AMADI") || val.toUpperCase().includes("BACHARWARA") ||
+         val.toUpperCase().includes("BADERA") || val.toUpperCase().includes("KATNI"))) {
+        blk = val;
+        break;
+      }
+    }
+  }
   out.push({panchayat:p,block:blk,district:clean(get("district")),
    work_type:clean(get("work_type")),work_code:clean(get("work_code")),
    work_name:clean(get("work_name")),wages:num(get("wages")),
@@ -403,27 +416,54 @@ function normalizeWork(input){
 }
 
 // KEY CHANGE: Build works map with composite key (panchayat + block)
+// AND also index by panchayat name only as fallback
 function buildWorksMap(data){
  const map={};
  data.forEach(w=>{
   const panchKey = up(w.panchayat);
   const blockKey = up(w.block || "");
-  // Use composite key: panchayat||block
-  const key = panchKey + "||" + blockKey;
   if(!panchKey) return;
-  if(!map[key]) map[key]=[];
-  map[key].push(w);
+  
+  // Primary key: panchayat||block (if block exists)
+  if(blockKey) {
+    const compositeKey = panchKey + "||" + blockKey;
+    if(!map[compositeKey]) map[compositeKey] = [];
+    map[compositeKey].push(w);
+  }
+  
+  // Also index by panchayat name only (fallback for when block is not available)
+  if(!map[panchKey]) map[panchKey] = [];
+  map[panchKey].push(w);
  });
  return map;
 }
 
-// KEY CHANGE: Get works for a specific panchayat and block
+// KEY CHANGE: Get works for a specific panchayat and block with fallback
 function getWorksForPanchayat(panchayat, block){
  if(!WORKS_LOADED) return [];
  const panchKey = up(panchayat);
  const blockKey = up(block || "");
- const key = panchKey + "||" + blockKey;
- return WORKS_MAP[key] || [];
+ 
+ // First try: composite key (panchayat + block)
+ if(blockKey) {
+   const compositeKey = panchKey + "||" + blockKey;
+   if(WORKS_MAP[compositeKey] && WORKS_MAP[compositeKey].length > 0) {
+     return WORKS_MAP[compositeKey];
+   }
+ }
+ 
+ // Fallback: just panchayat name (if block is not available in work data)
+ // But filter by block if block is provided in the work data
+ if(WORKS_MAP[panchKey]) {
+   if(blockKey) {
+     // Filter by block if block data exists in work records
+     const filtered = WORKS_MAP[panchKey].filter(w => up(w.block || "") === blockKey);
+     if(filtered.length > 0) return filtered;
+   }
+   return WORKS_MAP[panchKey];
+ }
+ 
+ return [];
 }
 
 // KEY CHANGE: Get work count for a specific panchayat and block
