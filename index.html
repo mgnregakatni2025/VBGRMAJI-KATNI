@@ -324,6 +324,7 @@ function classifyWork(h){
  if(h.includes("SANCTION")) return "sanction";
  if(h.includes("TOTAL")) return "total";
  if(h.includes("MANDAY")||h.includes("MAN DAY")) return "manday";
+ if(h.includes("BLOCK")) return "block";
  return null;
 }
 
@@ -376,7 +377,8 @@ function parseWorkArr(arr){
  for(let i=hi+1;i<arr.length;i++){const r=arr[i];if(!Array.isArray(r))continue;
   const get=k=>idx[k]!==undefined?r[idx[k]]:"";
   const p=clean(get("panchayat"));if(!p)continue;
-  out.push({panchayat:p,district:clean(get("district")),
+  let blk=get("block")?clean(get("block")):"";
+  out.push({panchayat:p,block:blk,district:clean(get("district")),
    work_type:clean(get("work_type")),work_code:clean(get("work_code")),
    work_name:clean(get("work_name")),wages:num(get("wages")),
    material:num(get("material")),sanction:num(get("sanction")),
@@ -385,10 +387,10 @@ function parseWorkArr(arr){
  return out;
 }
 function parseWorkObj(o){
- const r={panchayat:"",district:"",work_type:"",work_code:"",work_name:"",
+ const r={panchayat:"",block:"",district:"",work_type:"",work_code:"",work_name:"",
   wages:0,material:0,sanction:0,wages_exp:0,material_exp:0,total:0,manday:0};
  for(const k in o){const c=classifyWork(k);
-  if(c)r[c]=(["panchayat","district","work_type","work_code","work_name"].includes(c))?clean(o[k]):num(o[k]);}
+  if(c)r[c]=(["panchayat","district","work_type","work_code","work_name","block"].includes(c))?clean(o[k]):num(o[k]);}
  return r;
 }
 function normalizeWork(input){
@@ -400,16 +402,35 @@ function normalizeWork(input){
  return [];
 }
 
+// KEY CHANGE: Build works map with composite key (panchayat + block)
 function buildWorksMap(data){
  const map={};
- data.forEach(w=>{const key=up(w.panchayat);if(!key)return;if(!map[key])map[key]=[];map[key].push(w);});
+ data.forEach(w=>{
+  const panchKey = up(w.panchayat);
+  const blockKey = up(w.block || "");
+  // Use composite key: panchayat||block
+  const key = panchKey + "||" + blockKey;
+  if(!panchKey) return;
+  if(!map[key]) map[key]=[];
+  map[key].push(w);
+ });
  return map;
 }
-function getWorkCount(panchayat){
- if(!WORKS_LOADED)return 0;return (WORKS_MAP[up(panchayat)]||[]).length;
+
+// KEY CHANGE: Get works for a specific panchayat and block
+function getWorksForPanchayat(panchayat, block){
+ if(!WORKS_LOADED) return [];
+ const panchKey = up(panchayat);
+ const blockKey = up(block || "");
+ const key = panchKey + "||" + blockKey;
+ return WORKS_MAP[key] || [];
 }
-function getWorks(panchayat){
- if(!WORKS_LOADED)return [];return WORKS_MAP[up(panchayat)]||[];
+
+// KEY CHANGE: Get work count for a specific panchayat and block
+function getWorkCount(panchayat, block){
+ if(!WORKS_LOADED) return 0;
+ const works = getWorksForPanchayat(panchayat, block);
+ return works.length;
 }
 
 function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
@@ -507,15 +528,16 @@ function visCols(){
 }
 
 /* ===== पूरी रो क्लिक-योग्य ===== */
-function panchRow(r,i,vc){
+function panchRow(r,i,vc,blockName){
  const dys=r.wip===0;
- /* data-wk-panchayat <tr> पर — पूरी रो क्लिक-योग्य */
  const safeP=r.panchayat.replace(/"/g,'&quot;');
+ const safeBlock=blockName.replace(/"/g,'&quot;');
  let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
  vc.forEach(c=>{
   if(c.k==="panchayat")return;
   if(c.isWorkCol){
-   const cnt=getWorkCount(r.panchayat);
+   // KEY CHANGE: Pass block name to getWorkCount
+   const cnt=getWorkCount(r.panchayat, blockName);
    const cls="wk-cnt"+(cnt===0?" wk-zero":"");
    cells+=`<td class="${cls}">${cnt}</td>`;
   } else if(c.k==="sector"){
@@ -524,27 +546,28 @@ function panchRow(r,i,vc){
    cells+=`<td>${r[c.k]}</td>`;
   }
  });
- return `<tr class="${dys?'dys':''} wk-row" data-wk-panchayat="${safeP}">${cells}</tr>`;
+ // KEY CHANGE: Add data-block attribute to identify the block
+ return `<tr class="${dys?'dys':''} wk-row" data-wk-panchayat="${safeP}" data-wk-block="${safeBlock}">${cells}</tr>`;
 }
 
-function tableHTML(rows){
+function tableHTML(rows, blockName){
  const vc=visCols();
  const head=`<tr><th>#</th>`+vc.map(c=>`<th>${c.t}</th>`).join("")+`</tr>`;
- const body=rows.length?rows.map((r,i)=>panchRow(r,i+1,vc)).join("")
+ const body=rows.length?rows.map((r,i)=>panchRow(r,i+1,vc,blockName)).join("")
   :`<tr><td colspan="${vc.length+1}" style="text-align:center;padding:14px" class="mc">कोई पंचायत नहीं</td></tr>`;
  return `<div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 
-/* ===== मोडल ===== */
-function showWorkModal(panchayat){
- const works=getWorks(panchayat);
+/* ===== मोडल - KEY CHANGE: Show works for specific block ===== */
+function showWorkModal(panchayat, block){
+ const works=getWorksForPanchayat(panchayat, block);
  document.getElementById("modalTitle").textContent="📋 "+panchayat+" — कार्य सूची";
- document.getElementById("modalSub").textContent=works.length>0
+ document.getElementById("modalSub").textContent=(block ? "ब्लॉक: "+block+" • " : "")+(works.length>0
   ?"कुल "+works.length+" कार्य मिले"
-  :"इस पंचायत के लिए कोई कार्य डेटा उपलब्ध नहीं";
+  :"इस पंचायत के लिए कोई कार्य डेटा उपलब्ध नहीं");
  const body=document.getElementById("modalBody");
  if(!works.length){
-  body.innerHTML=`<div class="modal-empty"><div class="big">📭</div>कोई कार्य नहीं मिला<br><small style="color:var(--muted)">work.json में इस पंचायत का डेटा नहीं है</small></div>`;
+  body.innerHTML=`<div class="modal-empty"><div class="big">📭</div>कोई कार्य नहीं मिला<br><small style="color:var(--muted)">work.json में इस पंचायत (ब्लॉक: ${block}) का डेटा नहीं है</small></div>`;
  } else {
   const thead=`<tr><th>#</th>`+WORK_COLS.map(c=>`<th>${c.t}</th>`).join("")+`</tr>`;
   const tbody=works.map((w,i)=>{
@@ -634,7 +657,7 @@ function renderBlocks(filter,forceExpand){
       <span class="chev">▶</span><span class="sub-row-icon">✅</span>
       <span class="sub-row-label active-label">काम चालू (Work in Progress) — <b>${ar.length}</b> पंचायतें</span>
       <span class="sub-row-metrics">${subChips(e.activeM)}</span></div>
-     <div class="sub-row-body">${tableHTML(ar)}</div></div>`;}
+     <div class="sub-row-body">${tableHTML(ar, b.block)}</div></div>`;}
    if(dr.length){
     const sk=ek+"::dys";const sOpen=forceExpand||expandedSub.has(sk);
     subHTML+=`<div class="sub-row head-dys ${sOpen?'open':''}">
@@ -642,7 +665,7 @@ function renderBlocks(filter,forceExpand){
       <span class="chev">▶</span><span class="sub-row-icon">❌</span>
       <span class="sub-row-label dys-label">अक्रियाशील — <b>${dr.length}</b> पंचायतें</span>
       <span class="sub-row-metrics">${subChips(e.dysM)}</span></div>
-     <div class="sub-row-body">${tableHTML(dr)}</div></div>`;}
+     <div class="sub-row-body">${tableHTML(dr, b.block)}</div></div>`;}
    engHTML+=`<div class="eng-row ${eOpen?'open':''}">
      <div class="eng-row-head" data-toggle-eng="${ek}">
       <span class="chev">▶</span><span class="eng-row-name">👷 ${e.engineer}</span>
@@ -680,7 +703,7 @@ function renderAll(d){
  renderKPI(r.k,r.engCount);renderTopCharts();renderBlocks("",false);stamp();
 }
 
-/* ===== इवेंट: पूरी रो पर क्लिक ===== */
+/* ===== इवेंट: पूरी रो पर क्लिक - KEY CHANGE: Pass block name ===== */
 document.getElementById("kpis").addEventListener("click",e=>{
  const card=e.target.closest(".kpi.clickable");
  if(!card) return; setFilter(card.dataset.kpiFilter);
@@ -689,7 +712,13 @@ document.getElementById("kpis").addEventListener("click",e=>{
 document.getElementById("blocks").addEventListener("click",e=>{
  /* पूरी रो पर क्लिक → कार्य मोडल खोलो */
  const wkRow=e.target.closest("tr.wk-row");
- if(wkRow){e.stopPropagation();showWorkModal(wkRow.dataset.wkPanchayat);return;}
+ if(wkRow){
+  e.stopPropagation();
+  const panchayat = wkRow.dataset.wkPanchayat;
+  const block = wkRow.dataset.wkBlock || "";
+  showWorkModal(panchayat, block);
+  return;
+ }
  /* फ़िल्टर चिप */
  const chip=e.target.closest(".filter-chip");
  if(chip){e.stopPropagation();setFilter(chip.dataset.filter);return;}
