@@ -3,203 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>पंचायत कार्य डैशबोर्ड (JSON से लोड)</title>
+    <title>CEO/APO प्रगति डैशबोर्ड</title>
+    <!-- डेटाटेबल्स स्टाइल -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- आइकन के लिए -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f9; }
-        h1 { text-align: center; color: #333; }
-        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow-x: auto; }
-        .controls { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .controls input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 250px; font-size: 14px; }
-        .stats { font-size: 14px; color: #666; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; word-break: break-word; }
-        th { background-color: #f8f9fa; font-weight: 600; position: sticky; top: 0; z-index: 10; }
-        tr:nth-child(even) { background-color: #fcfcfc; }
-        tr:hover { background-color: #f1f1f1; }
-        .error-msg { color: red; text-align: center; padding: 20px; font-weight: bold; }
+        :root {
+            --primary-blue: #0d47a1;
+            --light-bg: #f4f6f9;
+            --card-border: #e2e8f0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* हेडर स्टाइल */
+        .main-header {
+            background: linear-gradient(90deg, #0d47a1 0%, #1976d2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .main-header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        .header-subtitle { font-size: 12px; opacity: 0.8; margin-top: 5px; }
+        .header-date { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; font-size: 14px; }
+
+        /* ब्लॉक कार्ड स्टाइल */
+        .block-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .block-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .block-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            background-color: #e8f0fe;
+            color: #0d47a1;
+            font-size: 12px;
+            border: 1px solid #cce0ff;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .block-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+        .stat-pill { padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: 500; background: #f8f9fa; border: 1px solid #e2e8f0; }
+        .stat-pill span { font-weight: bold; margin-right: 4px; }
+        .pill-blue { border-color: #0d47a1; color: #0d47a1; background: #e3f2fd; }
+        .pill-green { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
+        .pill-red { border-color: #c62828; color: #c62828; background: #ffebee; }
+        .pill-orange { border-color: #e65100; color: #e65100; background: #fff3e0; }
+
+        /* अकॉर्डियन कंटेंट */
+        .block-content { display: none; padding: 0; }
+        .block-content.active { display: block; }
+
+        /* चार्ट और सेक्टर कार्ड */
+        .chart-section { padding: 15px; border-bottom: 1px solid #f0f0f0; background: #fcfcfc; }
+        .sector-summary { display: flex; justify-content: space-around; background: white; margin: 15px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
+
+        /* टेबल स्टाइलिंग */
+        .table-section { padding: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th, .data-table td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .data-table th { background-color: #f8f9fa; font-weight: 600; color: #333; }
+        .data-table tr.active-row { background-color: #f0fff4; } /* हल्का हरा */
+        .data-table tr.inactive-row { background-color: #fff5f5; } /* हल्का लाल */
+
+        .red-alert-panel { border: 1px solid #ef5350; background: #fff5f5; padding: 15px; margin: 15px; border-radius: 6px; }
+        .red-alert-panel h4 { margin: 0 0 10px 0; color: #c62828; display: flex; align-items: center; gap: 10px; }
+        
+        /* मल्टी-सेक्टर चार्ट (Basic CSS Bar Chart replacement) */
+        .chart-wrapper { display: flex; justify-content: space-around; align-items: flex-end; height: 150px; padding-top: 20px; }
+        .chart-item { display: flex; flex-direction: column; align-items: center; width: 80px; }
+        .bar-container { display: flex; gap: 2px; height: 100px; align-items: flex-end; }
+        .bar-green { width: 20px; background: #4caf50; border-radius: 3px 3px 0 0; }
+        .bar-red { width: 20px; background: #f44336; border-radius: 3px 3px 0 0; }
+        .chart-label { font-size: 11px; margin-top: 5px; color: #555; text-align: center; }
+
+        .clickable { cursor: pointer; }
+        .toggle-icon { transition: transform 0.2s; }
+        .active .toggle-icon { transform: rotate(90deg); }
+        
+        @media (max-width: 768px) { .block-header { flex-direction: column; align-items: flex-start; gap: 10px; } .block-stats { width: 100%; justify-content: flex-start; } }
     </style>
 </head>
 <body>
 
-    <h1>पंचायत कार्य डैशबोर्ड (JSON फाइल्स से)</h1>
-
-    <div class="container">
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="खोजें (Work Name, Code, Panchayat...)">
-            <div class="stats" id="stats">कुल कार्य: लोड हो रहा है...</div>
+    <!-- हेडर -->
+    <div class="main-header">
+        <div>
+            <h2><i class="fas fa-chart-line" style="margin-right: 10px;"></i> मुख्य कार्यपालन अधिकारी / अतिरिक्त कार्यक्रम समन्वयक, जिला कटनी</h2>
+            <div class="header-subtitle">VB-G RAM G - विकासखण्ड स्तर पंचायत इकाई - e-Muster रोल निगरानी</div>
         </div>
-
-        <div id="loading" style="text-align:center; padding:20px;">⏳ डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...</div>
-        <div id="error" class="error-msg" style="display:none;"></div>
-
-        <table id="dashboardTable">
-            <thead>
-                <tr>
-                    <th>SNo.</th>
-                    <th>Panchayat</th>
-                    <th>Work Type</th>
-                    <th>Work Code</th>
-                    <th>Work Name</th>
-                    <th>Wages</th>
-                    <th>Material</th>
-                    <th>Sanction</th>
-                    <th>Wages_Exp</th>
-                    <th>Material_exp</th>
-                    <th>Total</th>
-                    <th>Manday</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data will be injected here -->
-            </tbody>
-        </table>
+        <div class="header-date"><i class="far fa-calendar-alt"></i> अद्यतन: 28 Jul 2026, 1:54 pm</div>
     </div>
 
+    <!-- डैशबोर्ड कंटेनर -->
+    <div id="dashboardContainer"></div>
+
+    <!-- स्क्रिप्ट्स -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    
     <script>
-        // ---------------- DATA FETCH AND PROCESSING ----------------
-        async function loadAndProcessData() {
+        // --- 1. JSON फाइल्स लोड करें ---
+        const dataFile = 'data.json';   // आपकी समरी फाइल
+        const workFile = 'work.json';   // आपकी कार्य फाइल
+        
+        // --- 2. डेटा प्रोसेसिंग लॉजिक ---
+        async function loadDashboardData() {
             try {
-                // 1. JSON फाइल्स को fetch करें
-                const [panchayatRes, workRes] = await Promise.all([
-                    fetch('data.json'),
-                    fetch('work.json')
+                const [dataRes, workRes] = await Promise.all([
+                    fetch(dataFile),
+                    fetch(workFile)
                 ]);
 
-                if (!panchayatRes.ok || !workRes.ok) {
-                    throw new Error(`फाइल नहीं मिली। data.json (${panchayatRes.status}) या work.json (${workRes.status}) चेक करें।`);
-                }
+                if (!dataRes.ok || !workRes.ok) throw new Error("JSON फाइल्स नहीं मिलीं");
 
-                const rawPanchayat = await panchayatRes.json();
-                const rawWork = await workRes.json();
+                const rawData = await dataRes.json(); // पंचायत समरी
+                const rawWork = await workRes.json(); // कार्य सूची
 
-                // 2. Panchayat Master Data (data.json) पार्स करें
-                const pHeaders = rawPanchayat[1];
-                const pData = rawPanchayat.slice(2);
+                // पंचायत मैप बनाएं (Block|Panchayat के लिए)
+                let panchayatMaster = {};
+                const pHeaders = rawData[1];
+                const pRows = rawData.slice(2);
                 
-                let panchayatMap = {};
-                pData.forEach(row => {
-                    // इंडेक्स: Panchayats=1, BLOCK=7
-                    let panchayatName = String(row[1] || '').trim();
-                    let blockName = String(row[7] || '').trim();
-                    
-                    if (panchayatName && blockName) {
-                        // Unique Key: Block|Panchayat
-                        let key = (blockName + '|' + panchayatName).toLowerCase();
-                        panchayatMap[key] = { panchayat: panchayatName, block: blockName };
+                pRows.forEach(row => {
+                    let pName = String(row[1] || '').trim();
+                    let bName = String(row[7] || '').trim();
+                    if(pName && bName) {
+                        let key = (bName + '|' + pName).toLowerCase();
+                        panchayatMaster[key] = {
+                            name: pName,
+                            block: bName,
+                            total_gps: row[2] || 0,
+                            active_gps: row[3] || 0,
+                            works_in_progress: row[4] || 0,
+                            mr_issued: row[5] || 0,
+                            workers_no_ekyc: row[6] || 0,
+                            total_mr: row[7] || 0
+                        };
                     }
                 });
 
-                // 3. Work Data (work.json) पार्स करें और फ़िल्टर करें
+                // कार्यों को प्रोसेस करें और ग्रुप करें
                 const wHeaders = rawWork[0];
-                const wData = rawWork.slice(1);
+                const wRows = rawWork.slice(1);
+                
+                let blockStats = {}; // ब्लॉक-वार समरी
+                let panchayatWork = {}; // पंचायत-वार कार्य डेटा
 
-                let processedRows = [];
-                let snoCounter = 1;
+                wRows.forEach(row => {
+                    let work = {};
+                    wHeaders.forEach((h, i) => { work[h] = String(row[i] || '').trim(); });
 
-                wData.forEach(row => {
-                    let workObj = {};
-                    wHeaders.forEach((header, idx) => {
-                        workObj[header] = row[idx] !== undefined ? String(row[idx]).trim() : '';
-                    });
+                    let wCode = work['Work Code'] || '';
+                    if (wCode.split('/')[0].length < 10) return; // 10 अंकों से कम हटाएं
 
-                    // Validation 1: Block और Panchayat होना चाहिए
-                    let block = workObj['Block'] || '';
-                    let panchayat = workObj['Panchayat'] || '';
-                    if (!block || !panchayat) return;
+                    let blockName = work['Block'];
+                    let panchayatName = work['Panchayat'];
+                    let joinKey = (blockName + '|' + panchayatName).toLowerCase();
 
-                    // Validation 2: 10 अंकों से कम कोड वाले हटाएं
-                    let workCode = workObj['Work Code'] || '';
-                    let codePrefix = workCode.split('/')[0];
-                    if (codePrefix.length < 10) return; // Skip
+                    // अगर यह पंचायत मास्टर में है, तो ही आगे बढ़ें
+                    if(panchayatMaster[joinKey]) {
+                        if(!panchayatWork[joinKey]) panchayatWork[joinKey] = [];
+                        panchayatWork[joinKey].push(work);
 
-                    // Validation 3: Panchayat Map से मैच करें
-                    let joinKey = (block + '|' + panchayat).toLowerCase();
-                    let masterData = panchayatMap[joinKey];
-
-                    if (masterData) {
-                        processedRows.push({
-                            'SNo.': snoCounter++,
-                            'Panchayat': masterData.panchayat,
-                            'Work Type': workObj['Work Type'] || '',
-                            'Work Code': workObj['Work Code'] || '',
-                            'Work Name': workObj['Work Name'] || '',
-                            'Wages': workObj['Wages'] || '',
-                            'Material': workObj['Material'] || '',
-                            'Sanction': workObj['Sanction'] || '',
-                            'Wages_Exp': workObj['Wages_Exp'] || '',
-                            'Material_exp': workObj['Material_exp'] || '',
-                            'Total': workObj['Total'] || '',
-                            'Manday': workObj['Manday'] || ''
-                        });
+                        // ब्लॉक समरी तैयार करें
+                        if(!blockStats[blockName]) {
+                            blockStats[blockName] = {
+                                totalWorks: 0, totalWages: 0, totalMandays: 0,
+                                engineers: new Set(), sectors: new Set()
+                            };
+                        }
+                        blockStats[blockName].totalWorks++;
+                        blockStats[blockName].totalWages += parseFloat(work['Wages'] || 0);
+                        blockStats[blockName].totalMandays += parseInt(work['Manday'] || 0);
+                        blockStats[blockName].engineers.add(work['ENGG'] || 'N/A');
+                        blockStats[blockName].sectors.add(work['SECOTR'] || 'N/A');
                     }
                 });
 
-                return processedRows;
+                renderDashboard(panchayatMaster, panchayatWork, blockStats);
 
             } catch (error) {
-                document.getElementById('loading').style.display = 'none';
-                const errDiv = document.getElementById('error');
-                errDiv.style.display = 'block';
-                errDiv.innerText = "❌ त्रुटि: " + error.message;
-                return [];
+                document.getElementById('dashboardContainer').innerHTML = 
+                    `<div style="color:red; padding:20px; text-align:center;">Error loading data: ${error.message}</div>`;
             }
         }
 
-        // ---------------- RENDER FUNCTIONS ----------------
-        let allData = [];
-
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            const stats = document.getElementById('stats');
-            const loading = document.getElementById('loading');
+        // --- 3. डैशबोर्ड रेंडर करें ---
+        function renderDashboard(master, workMap, blockStats) {
+            let html = '';
             
-            loading.style.display = 'none';
-            tbody.innerHTML = '';
+            // ब्लॉक्स को निकालें
+            let blocks = [...new Set(Object.values(master).map(p => p.block))];
 
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;">कोई डेटा नहीं मिला</td></tr>`;
-                stats.innerText = `कुल कार्य: 0`;
-                return;
-            }
+            blocks.forEach(block => {
+                // इस ब्लॉक की सभी पंचायतें
+                let panchayats = Object.keys(master).filter(k => master[k].block === block);
+                let activePanchayats = panchayats.filter(k => workMap[k] && workMap[k].length > 0);
+                let inactivePanchayats = panchayats.filter(k => !workMap[k] || workMap[k].length === 0);
 
-            data.forEach(row => {
-                let tr = document.createElement('tr');
-                Object.values(row).forEach(val => {
-                    let td = document.createElement('td');
-                    td.textContent = val;
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
+                let blockMeta = blockStats[block] || { totalWorks: 0, totalWages: 0, totalMandays: 0, engineers: new Set(), sectors: new Set() };
+
+                html += `
+                <div class="block-card">
+                    <div class="block-header clickable" onclick="toggleBlock('${block}')">
+                        <div class="block-title">
+                            <i class="fas fa-caret-right toggle-icon"></i>
+                            ${block} 
+                            <span class="block-badge">${panchayats.length} पंचायतें</span>
+                        </div>
+                        <div class="block-stats">
+                            <div class="stat-pill pill-blue"><span>${activePanchayats.length}</span> सक्रिय</div>
+                            <div class="stat-pill pill-red"><span>${inactivePanchayats.length}</span> निष्क्रिय</div>
+                            <div class="stat-pill pill-green"><span>${blockMeta.totalMandays || 0}</span> मैनडेज़</div>
+                            <div class="stat-pill pill-orange"><span>${blockMeta.totalWages.toFixed(0) || 0}</span> मजदूरी (₹)</div>
+                            <div class="stat-pill"><span>${blockMeta.totalWorks || 0}</span> कार्य</div>
+                        </div>
+                    </div>
+
+                    <div class="block-content" id="content-${block}">
+                        <!-- मोक चार्ट -->
+                        <div class="chart-section">
+                            <div style="font-size:14px; font-weight:bold; margin-bottom:5px;">${block} उपलब्धि</div>
+                            <div class="chart-wrapper">
+                                <div class="chart-item">
+                                    <div class="bar-container">
+                                        <div class="bar-green" style="height:${Math.min(activePanchayats.length*20, 100)}px;"></div>
+                                        <div class="bar-red" style="height:${Math.min(inactivePanchayats.length*20, 100)}px;"></div>
+                                    </div>
+                                    <div class="chart-label">Total Works</div>
+                                </div>
+                                <div class="chart-item">
+                                    <div class="bar-container">
+                                        <div class="bar-green" style="height:${Math.min(activePanchayats.length*30, 100)}px;"></div>
+                                        <div class="bar-red" style="height:${Math.min(inactivePanchayats.length*30, 100)}px;"></div>
+                                    </div>
+                                    <div class="chart-label">मैनडेज़</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- सेक्टर इंजीनियर कार्ड -->
+                        <div class="sector-summary">
+                            <div><strong>सेक्टर:</strong> ${[...blockMeta.sectors].join(', ') || 'N/A'}</div>
+                            <div><strong>इंजीनियर:</strong> ${[...blockMeta.engineers].join(', ') || 'N/A'}</div>
+                        </div>
+
+                        <!-- सक्रिय पंचायतें -->
+                        ${activePanchayats.length > 0 ? `
+                        <div class="table-section">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <h4 style="margin:0; color:#2e7d32;"><i class="fas fa-check-circle"></i> काम पाएं - ${activePanchayats.length} पंचायतें</h4>
+                            </div>
+                            <table class="data-table active-table" id="table-${block}">
+                                <thead><tr>
+                                    <th>#</th><th>पंचायत</th><th>निष्पादित मजदूरी</th><th>कुल मैनडेज़</th><th>जारी MR</th><th>कुल MR</th><th>सेक्टर</th><th>इंजीनियर</th>
+                                </tr></thead>
+                                <tbody>
+                        ` : ''}
+
+                        ${activePanchayats.map((key, idx) => {
+                            let p = master[key];
+                            let works = workMap[key] || [];
+                            // समरी कैलकुलेट करें
+                            let totalWages = works.reduce((s, w) => s + parseFloat(w['Wages'] || 0), 0);
+                            let totalMandays = works.reduce((s, w) => s + parseInt(w['Manday'] || 0), 0);
+                            let totalMr = parseInt(p.total_mr || 0);
+                            let mrIssued = parseInt(p.mr_issued || 0);
+                            let eng = [...new Set(works.map(w => w['ENGG'] || ''))].filter(Boolean).join(', ');
+                            let sec = [...new Set(works.map(w => w['SECOTR'] || ''))].filter(Boolean).join(', ');
+
+                            return `<tr class="active-row">
+                                <td>${idx+1}</td>
+                                <td>${p.name}</td>
+                                <td>${totalWages.toFixed(0)}</td>
+                                <td>${totalMandays}</td>
+                                <td>${mrIssued}</td>
+                                <td>${totalMr}</td>
+                                <td>${sec}</td>
+                                <td>${eng}</td>
+                            </tr>`;
+                        }).join('')}
+
+                        ${activePanchayats.length > 0 ? `</tbody></table></div>` : ''}
+
+                        <!-- निष्क्रिय पंचायतें (लाल) -->
+                        ${inactivePanchayats.length > 0 ? `
+                        <div class="red-alert-panel">
+                            <h4><i class="fas fa-times-circle"></i> अक्रियाशील - ${inactivePanchayats.length} पंचायतें</h4>
+                            <table class="data-table inactive-table" style="width:100%;">
+                                <thead><tr><th>#</th><th>पंचायत</th><th>निष्पादित मजदूरी</th><th>कुल मैनडेज़</th><th>जारी MR</th><th>कुल MR</th><th>सेक्टर</th><th>इंजीनियर</th></tr></thead>
+                                <tbody>
+                                    ${inactivePanchayats.map((key, idx) => {
+                                        let p = master[key];
+                                        return `<tr class="inactive-row">
+                                            <td>${idx+1}</td>
+                                            <td>${p.name}</td>
+                                            <td>0</td><td>0</td><td>0</td><td>${p.total_mr || 0}</td>
+                                            <td>-</td><td>-</td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ` : ''}
+                        
+                    </div>
+                </div>
+                `;
             });
 
-            stats.innerText = `कुल कार्य: ${data.length}`;
-        }
+            document.getElementById('dashboardContainer').innerHTML = html;
 
-        function filterData(searchTerm) {
-            if (!searchTerm) {
-                renderTable(allData);
-                return;
-            }
-            const lowerTerm = searchTerm.toLowerCase();
-            const filtered = allData.filter(row => {
-                return Object.values(row).some(val => 
-                    String(val).toLowerCase().includes(lowerTerm)
-                );
-            });
-            renderTable(filtered);
-        }
-
-        // ---------------- MAIN EXECUTION ----------------
-        document.addEventListener('DOMContentLoaded', async () => {
-            allData = await loadAndProcessData();
-            
-            if (allData.length > 0) {
-                renderTable(allData);
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    filterData(e.target.value);
+            // डेटाटेबल्स को इनिशियलाइज़ करें
+            setTimeout(() => {
+                document.querySelectorAll('.active-table').forEach(t => {
+                    $(t).DataTable({ pageLength: 5, bFilter: false, bLengthChange: false, order: [[0, 'asc']] });
                 });
+            }, 100);
+        }
+
+        // --- 4. टॉगल फंक्शन ---
+        function toggleBlock(id) {
+            let content = document.getElementById('content-' + id);
+            let card = content.closest('.block-card');
+            card.classList.toggle('active');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+                // टेबल को री-ड्रॉ करें अगर डेटाटेबल बना है
+                let table = $(content).find('.data-table').DataTable();
+                if(table) table.draw();
             }
-        });
+        }
+
+        // रेंडर शुरू करें
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
     </script>
 </body>
 </html>
