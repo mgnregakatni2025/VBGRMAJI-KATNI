@@ -3,75 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>पंचायत कार्य डैशबोर्ड (GitHub)</title>
+    <title>पंचायत कार्य डैशबोर्ड (JSON से लोड)</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background-color: #f4f6f9;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-        .controls {
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .controls input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 250px;
-            font-size: 14px;
-        }
-        .stats {
-            font-size: 14px;
-            color: #666;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px 8px;
-            text-align: left;
-            vertical-align: top;
-            word-break: break-word;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f9; }
+        h1 { text-align: center; color: #333; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow-x: auto; }
+        .controls { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .controls input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 250px; font-size: 14px; }
+        .stats { font-size: 14px; color: #666; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; word-break: break-word; }
+        th { background-color: #f8f9fa; font-weight: 600; position: sticky; top: 0; z-index: 10; }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f1f1; }
+        .error-msg { color: red; text-align: center; padding: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>पंचायत कार्य डैशबोर्ड (स्थायी संस्करण)</h1>
+    <h1>पंचायत कार्य डैशबोर्ड (JSON फाइल्स से)</h1>
 
     <div class="container">
         <div class="controls">
             <input type="text" id="searchInput" placeholder="खोजें (Work Name, Code, Panchayat...)">
             <div class="stats" id="stats">कुल कार्य: लोड हो रहा है...</div>
         </div>
+
+        <div id="loading" style="text-align:center; padding:20px;">⏳ डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...</div>
+        <div id="error" class="error-msg" style="display:none;"></div>
 
         <table id="dashboardTable">
             <thead>
@@ -97,28 +56,106 @@
     </div>
 
     <script>
-        // ---------------- EMBEDDED PRE-PROCESSED DATA ----------------
-        // यह डेटा आपकी दोनों JSON फाइल्स को मर्ज करने के बाद बना है।
-        // इसमें केवल वे कार्य हैं जिनका Work Code 10 अंकों से अधिक का है,
-        // और जो सही Block + Panchayat के साथ मैच हुए हैं।
-        
-        const allData = [
-            {"SNo.":1,"Panchayat":"AMADI","Work Type":"Construction of Stabilization Pond for Community","Work Code":"1744003004/RS/22012034655762","Work Name":"WSP NIRMAN KARY GRAM AMADI","Wages":"100000","Material":"0","Sanction":"100000","Wages_Exp":"13575","Material_exp":"0","Total":"13575","Manday":"74"},
-            {"SNo.":2,"Panchayat":"AMADI","Work Type":"Constr of GP for community","Work Code":"1744003004/AV/22012034647226","Work Name":"हाई स्कूल में अतिरिक्त कक्ष निर्माण कार्य ग्राम- भदौरा","Wages":"75000","Material":"0","Sanction":"75000","Wages_Exp":"3600","Material_exp":"0","Total":"3600","Manday":"18"},
-            {"SNo.":3,"Panchayat":"AMADI","Work Type":"Constr of Vermi Compost structure for Individual","Work Code":"1744003004/IF/22012035637464","Work Name":"Vermi Compost work Smt Suman Vishkarma","Wages":"3550.93","Material":"26496.06","Sanction":"30047","Wages_Exp":"3283.14","Material_exp":"0","Total":"3283.14","Manday":"15"},
-            {"SNo.":4,"Panchayat":"AMADI","Work Type":"Block Plantation-Hort-Trees in fields-Individuals","Work Code":"1744003004/IF/22012035625851","Work Name":"एक बगिया माँ के नाम केसर बाई भदौरा अमाड़ी","Wages":"87110.46","Material":"108514.4","Sanction":"195808","Wages_Exp":"1480.44","Material_exp":"0","Total":"1480.44","Manday":"6"},
-            {"SNo.":5,"Panchayat":"AMADI","Work Type":"Construction of Farm Ponds for Individuals","Work Code":"1744003004/IF/22012035518461","Work Name":"खेत तालाब ( रामबहादुर सिंह / बालगोविंद )","Wages":"112428.2","Material":"35192.93","Sanction":"147621","Wages_Exp":"252.98","Material_exp":"0","Total":"252.98","Manday":"1"},
-            {"SNo.":6,"Panchayat":"AMADI","Work Type":"Construction of Farm Ponds for Individuals","Work Code":"1744003004/IF/22012035518461","Work Name":"खेत तालाब ( रामबहादुर सिंह / बालगोविंद )","Wages":"112428.2","Material":"35192.93","Sanction":"147621","Wages_Exp":"252.98","Material_exp":"0","Total":"252.98","Manday":"1"},
-            // बाकी का डेटा आपकी पहली इमेज की तरह यहाँ लोड होता रहेगा।
-            // कुल मिलाकर आपको यह HTML पेज 100% काम करेगा।
-        ];
+        // ---------------- DATA FETCH AND PROCESSING ----------------
+        async function loadAndProcessData() {
+            try {
+                // 1. JSON फाइल्स को fetch करें
+                const [panchayatRes, workRes] = await Promise.all([
+                    fetch('data.json'),
+                    fetch('work.json')
+                ]);
 
-        // ---------------- RENDER FUNCTION ----------------
+                if (!panchayatRes.ok || !workRes.ok) {
+                    throw new Error(`फाइल नहीं मिली। data.json (${panchayatRes.status}) या work.json (${workRes.status}) चेक करें।`);
+                }
+
+                const rawPanchayat = await panchayatRes.json();
+                const rawWork = await workRes.json();
+
+                // 2. Panchayat Master Data (data.json) पार्स करें
+                const pHeaders = rawPanchayat[1];
+                const pData = rawPanchayat.slice(2);
+                
+                let panchayatMap = {};
+                pData.forEach(row => {
+                    // इंडेक्स: Panchayats=1, BLOCK=7
+                    let panchayatName = String(row[1] || '').trim();
+                    let blockName = String(row[7] || '').trim();
+                    
+                    if (panchayatName && blockName) {
+                        // Unique Key: Block|Panchayat
+                        let key = (blockName + '|' + panchayatName).toLowerCase();
+                        panchayatMap[key] = { panchayat: panchayatName, block: blockName };
+                    }
+                });
+
+                // 3. Work Data (work.json) पार्स करें और फ़िल्टर करें
+                const wHeaders = rawWork[0];
+                const wData = rawWork.slice(1);
+
+                let processedRows = [];
+                let snoCounter = 1;
+
+                wData.forEach(row => {
+                    let workObj = {};
+                    wHeaders.forEach((header, idx) => {
+                        workObj[header] = row[idx] !== undefined ? String(row[idx]).trim() : '';
+                    });
+
+                    // Validation 1: Block और Panchayat होना चाहिए
+                    let block = workObj['Block'] || '';
+                    let panchayat = workObj['Panchayat'] || '';
+                    if (!block || !panchayat) return;
+
+                    // Validation 2: 10 अंकों से कम कोड वाले हटाएं
+                    let workCode = workObj['Work Code'] || '';
+                    let codePrefix = workCode.split('/')[0];
+                    if (codePrefix.length < 10) return; // Skip
+
+                    // Validation 3: Panchayat Map से मैच करें
+                    let joinKey = (block + '|' + panchayat).toLowerCase();
+                    let masterData = panchayatMap[joinKey];
+
+                    if (masterData) {
+                        processedRows.push({
+                            'SNo.': snoCounter++,
+                            'Panchayat': masterData.panchayat,
+                            'Work Type': workObj['Work Type'] || '',
+                            'Work Code': workObj['Work Code'] || '',
+                            'Work Name': workObj['Work Name'] || '',
+                            'Wages': workObj['Wages'] || '',
+                            'Material': workObj['Material'] || '',
+                            'Sanction': workObj['Sanction'] || '',
+                            'Wages_Exp': workObj['Wages_Exp'] || '',
+                            'Material_exp': workObj['Material_exp'] || '',
+                            'Total': workObj['Total'] || '',
+                            'Manday': workObj['Manday'] || ''
+                        });
+                    }
+                });
+
+                return processedRows;
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                const errDiv = document.getElementById('error');
+                errDiv.style.display = 'block';
+                errDiv.innerText = "❌ त्रुटि: " + error.message;
+                return [];
+            }
+        }
+
+        // ---------------- RENDER FUNCTIONS ----------------
+        let allData = [];
+
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
             const stats = document.getElementById('stats');
+            const loading = document.getElementById('loading');
             
+            loading.style.display = 'none';
             tbody.innerHTML = '';
+
             if (data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;">कोई डेटा नहीं मिला</td></tr>`;
                 stats.innerText = `कुल कार्य: 0`;
@@ -153,11 +190,15 @@
         }
 
         // ---------------- MAIN EXECUTION ----------------
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTable(allData);
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                filterData(e.target.value);
-            });
+        document.addEventListener('DOMContentLoaded', async () => {
+            allData = await loadAndProcessData();
+            
+            if (allData.length > 0) {
+                renderTable(allData);
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    filterData(e.target.value);
+                });
+            }
         });
     </script>
 </body>
