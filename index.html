@@ -449,6 +449,7 @@ function metricChips(m,scope){
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
+ if(FLAGS.ongoing_work)h+=`<span class="m blue">प्रगतिरत कार्य <b>${m.ongoing_work}</b></span>`;
  if(scope==="top"&&FLAGS.mr)h+=`<span class="m">कुल MR <b>${m.mr}</b></span>`;
  return h;
 }
@@ -457,6 +458,7 @@ function subChips(m){
  h+=`<span class="m">नियोजित श्रृमिक <b>${m.labour}</b></span>`;
  if(FLAGS.mandays)h+=`<span class="m">श्रृजित मा0दिवस <b>${m.mandays}</b></span>`;
  if(FLAGS.budget)h+=`<span class="m">श्रम बजट <b>${m.budget}</b></span>`;
+ if(FLAGS.ongoing_work)h+=`<span class="m blue">प्रगतिरत कार्य <b>${m.ongoing_work}</b></span>`;
  if(FLAGS.mr)h+=`<span class="m">MR <b>${m.mr}</b></span>`;
  return h;
 }
@@ -600,6 +602,7 @@ function renderTopCharts(){
  const ds=[{label:"नियोजित श्रृमिक",data:BLOCKS.map(b=>b.m.labour),backgroundColor:"rgba(13,71,161,.75)",borderColor:"#0d47a1",borderWidth:1,borderRadius:4,borderSkipped:false}];
  if(FLAGS.mandays) ds.push({label:"श्रृजित मा0दिवस",data:BLOCKS.map(b=>b.m.mandays),backgroundColor:"rgba(156,39,176,.75)",borderColor:"#7b1fa2",borderWidth:1,borderRadius:4,borderSkipped:false});
  if(FLAGS.budget) ds.push({label:"श्रम बजट",data:BLOCKS.map(b=>b.m.budget),backgroundColor:"rgba(233,30,99,.75)",borderColor:"#c2185b",borderWidth:1,borderRadius:4,borderSkipped:false});
+ if(FLAGS.ongoing_work) ds.push({label:"प्रगतिरत कार्य",data:BLOCKS.map(b=>b.m.ongoing_work),backgroundColor:"rgba(255,152,0,.75)",borderColor:"#f57c00",borderWidth:1,borderRadius:4,borderSkipped:false});
  mk("chBlockMetrics","bar",{labels:names,datasets:ds},{indexAxis:"y"});
 }
 function buildEngChart(b){
