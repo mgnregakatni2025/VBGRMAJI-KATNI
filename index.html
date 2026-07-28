@@ -318,6 +318,7 @@ function classifyWork(h){
  if(h.includes("WORK CODE")||h.includes("WORK_CODE")) return "work_code";
  if(h.includes("WORK NAME")||h.includes("WORK_NAME")) return "work_name";
  if(h.includes("DISTRICT")) return "district";
+ if(h.includes("BLOCK")) return "block";
  if(h.includes("PANCHAYAT")||h.includes("पंचायत")) return "panchayat";
  if(h.includes("WAGES")) return "wages";
  if(h.includes("MATERIAL")) return "material";
@@ -376,7 +377,7 @@ function parseWorkArr(arr){
  for(let i=hi+1;i<arr.length;i++){const r=arr[i];if(!Array.isArray(r))continue;
   const get=k=>idx[k]!==undefined?r[idx[k]]:"";
   const p=clean(get("panchayat"));if(!p)continue;
-  out.push({panchayat:p,district:clean(get("district")),
+  out.push({block:up(get("block"))||"—",panchayat:p,district:clean(get("district")),
    work_type:clean(get("work_type")),work_code:clean(get("work_code")),
    work_name:clean(get("work_name")),wages:num(get("wages")),
    material:num(get("material")),sanction:num(get("sanction")),
@@ -385,10 +386,11 @@ function parseWorkArr(arr){
  return out;
 }
 function parseWorkObj(o){
- const r={panchayat:"",district:"",work_type:"",work_code:"",work_name:"",
+ const r={block:"—",panchayat:"",district:"",work_type:"",work_code:"",work_name:"",
   wages:0,material:0,sanction:0,wages_exp:0,material_exp:0,total:0,manday:0};
  for(const k in o){const c=classifyWork(k);
-  if(c)r[c]=(["panchayat","district","work_type","work_code","work_name"].includes(c))?clean(o[k]):num(o[k]);}
+  if(c)r[c]=(["block","panchayat","district","work_type","work_code","work_name"].includes(c))?clean(o[k]):num(o[k]);}
+ if(!r.block||up(r.block)==="#N/A")r.block="—";
  return r;
 }
 function normalizeWork(input){
@@ -400,16 +402,17 @@ function normalizeWork(input){
  return [];
 }
 
+function workKey(block,panchayat){return up(block)+"::"+up(panchayat);}
 function buildWorksMap(data){
  const map={};
- data.forEach(w=>{const key=up(w.panchayat);if(!key)return;if(!map[key])map[key]=[];map[key].push(w);});
+ data.forEach(w=>{const key=workKey(w.block,w.panchayat);if(key==="::")return;if(!map[key])map[key]=[];map[key].push(w);});
  return map;
 }
-function getWorkCount(panchayat){
- if(!WORKS_LOADED)return 0;return (WORKS_MAP[up(panchayat)]||[]).length;
+function getWorkCount(block,panchayat){
+ if(!WORKS_LOADED)return 0;return (WORKS_MAP[workKey(block,panchayat)]||[]).length;
 }
-function getWorks(panchayat){
- if(!WORKS_LOADED)return [];return WORKS_MAP[up(panchayat)]||[];
+function getWorks(block,panchayat){
+ if(!WORKS_LOADED)return [];return WORKS_MAP[workKey(block,panchayat)]||[];
 }
 
 function sum(list,k){return list.reduce((a,r)=>a+(+r[k]||0),0);}
@@ -496,7 +499,7 @@ const WORK_COLS=[
 
 function visCols(){
  const c=[{k:"panchayat",t:"पंचायत"},{k:"labour",t:"नियोजित श्रृमिक"}];
- if(WORKS_LOADED) c.push({k:"_workCount",t:"कुल प्रगतिरत कार्य",isWorkCol:true});
+ c.push({k:"ongoing_work",t:"कुल प्रगतिरत कार्य"});
  if(FLAGS.ongoing) c.push({k:"ongoing",t:"चल रहे MR"});
  if(FLAGS.ekyc) c.push({k:"ekyc",t:"बिना e‑KYC"});
  if(FLAGS.mr) c.push({k:"mr",t:"कुल MR"});
@@ -511,20 +514,19 @@ function panchRow(r,i,vc){
  const dys=r.wip===0;
  /* data-wk-panchayat <tr> पर — पूरी रो क्लिक-योग्य */
  const safeP=r.panchayat.replace(/"/g,'&quot;');
+ const safeB=r.block.replace(/"/g,'&quot;');
  let cells=`<td>${i}</td><td><b>${r.panchayat}</b></td>`;
  vc.forEach(c=>{
   if(c.k==="panchayat")return;
-  if(c.isWorkCol){
-   const cnt=getWorkCount(r.panchayat);
-   const cls="wk-cnt"+(cnt===0?" wk-zero":"");
-   cells+=`<td class="${cls}">${cnt}</td>`;
+  if(c.k==="ongoing_work"){
+   cells+=`<td>${r.ongoing_work}</td>`;
   } else if(c.k==="sector"){
    cells+=`<td>${r.sector||'—'}</td>`;
   } else {
    cells+=`<td>${r[c.k]}</td>`;
   }
  });
- return `<tr class="${dys?'dys':''} wk-row" data-wk-panchayat="${safeP}">${cells}</tr>`;
+ return `<tr class="${dys?'dys':''} wk-row" data-wk-block="${safeB}" data-wk-panchayat="${safeP}">${cells}</tr>`;
 }
 
 function tableHTML(rows){
@@ -536,12 +538,12 @@ function tableHTML(rows){
 }
 
 /* ===== मोडल ===== */
-function showWorkModal(panchayat){
- const works=getWorks(panchayat);
- document.getElementById("modalTitle").textContent="📋 "+panchayat+" — कार्य सूची";
+function showWorkModal(block,panchayat){
+ const works=getWorks(block,panchayat);
+ document.getElementById("modalTitle").textContent="📋 "+block+" / "+panchayat+" — कार्य सूची";
  document.getElementById("modalSub").textContent=works.length>0
   ?"कुल "+works.length+" कार्य मिले"
-  :"इस पंचायत के लिए कोई कार्य डेटा उपलब्ध नहीं";
+  :"इस ब्लॉक और पंचायत के लिए कोई कार्य डेटा उपलब्ध नहीं";
  const body=document.getElementById("modalBody");
  if(!works.length){
   body.innerHTML=`<div class="modal-empty"><div class="big">📭</div>कोई कार्य नहीं मिला<br><small style="color:var(--muted)">work.json में इस पंचायत का डेटा नहीं है</small></div>`;
@@ -689,7 +691,7 @@ document.getElementById("kpis").addEventListener("click",e=>{
 document.getElementById("blocks").addEventListener("click",e=>{
  /* पूरी रो पर क्लिक → कार्य मोडल खोलो */
  const wkRow=e.target.closest("tr.wk-row");
- if(wkRow){e.stopPropagation();showWorkModal(wkRow.dataset.wkPanchayat);return;}
+ if(wkRow){e.stopPropagation();showWorkModal(wkRow.dataset.wkBlock,wkRow.dataset.wkPanchayat);return;}
  /* फ़िल्टर चिप */
  const chip=e.target.closest(".filter-chip");
  if(chip){e.stopPropagation();setFilter(chip.dataset.filter);return;}
