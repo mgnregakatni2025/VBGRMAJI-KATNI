@@ -23,10 +23,13 @@
   if(FB_DB)return true;
   try{
    if(!window.firebase||!window.firebase.initializeApp)return false;
-   if(!FB_APP)FB_APP=window.firebase.initializeApp(FIREBASE_CONFIG);
+   if(!FB_APP){
+    try{FB_APP=window.firebase.app();}
+    catch(e){FB_APP=window.firebase.initializeApp(FIREBASE_CONFIG);}
+   }
    FB_DB=window.firebase.database(FB_APP);
    return true;
-  }catch(e){return false;}
+  }catch(e){console.error("FB init err:",e);return false;}
  }
  function fbEnabled(){return fbInit();}
 
@@ -49,14 +52,16 @@
  function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 
  function persistLocal(){try{localStorage.setItem(RMK_STORE,JSON.stringify(remarks));}catch(e){}}
+ function encFbKey(code){return String(code||"").replace(/[.#$\/\[\]]/g,"_");}
+ function decFbKey(key){return key;}
  async function persistFirebase(){
   if(!fbEnabled())return false;
   try{
    const payload={};
-   remarks.forEach(r=>{payload[r.work_code]=r;});
+   remarks.forEach(r=>{payload[encFbKey(r.work_code)]=r;});
    await FB_DB.ref(FB_PATH).set(payload);
    return true;
-  }catch(e){return false;}
+  }catch(e){console.error("FB persist err:",e);return false;}
  }
  async function persistRemote(){
   /* पहले Firebase पर सेव करने की कोशिश */
@@ -86,9 +91,9 @@
   /* "अन्य" चुना हो तो लिखा हुआ टेक्स्ट दिखाएँ */
   return (rk.label_id==="other"&&rk.detail)?rk.detail:rk.label;
  }
- function saveRmk(){
+ async function saveRmk(){
   persistLocal();
-  persistRemote();
+  await persistRemote();
   const code=curCode||"";
   document.querySelectorAll('#modalBody tr.wk-detail').forEach(tr=>{
    if(tr.dataset.workCode!==code)return;
@@ -305,7 +310,7 @@
    const val=snap.val();
    if(!val)return false;
    const arr=[];
-   Object.keys(val).forEach(code=>{const r=val[code];if(r&&typeof r==="object"){r.work_code=r.work_code||code;arr.push(r);}});
+   Object.keys(val).forEach(key=>{const r=val[key];if(r&&typeof r==="object"){arr.push(r);}});
    if(arr.length){remarks=arr;persistLocal();refreshRmkBar();return true;}
    return false;
   }catch(e){return false;}
