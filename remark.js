@@ -6,13 +6,29 @@
  const REPO_PRIMARY="VBGRMAJI-KATNI";
  const REPO_FALLBACK="VBGRMAJI-KATNI";
 
- /* ===== JSONbin (क्लाउड में रिमार्क सेव) ===== */
- /* JSONbin.io पर free bin बनाकर नीचे दो वैल्यू डालें:
-    - BIN_ID : bin का ID (https://api.jsonbin.io/v3/b/xxxx से)
-    - API_KEY : API Key (अकाउंट → API Keys) */
- const JSONBIN_BIN_ID="6a6c8ea0f5f4af5e29d9c99c";
- const JSONBIN_API_KEY="$2a$10$qxemQQ9Gy9TW3IS5T1JLdeYkda6RxuMF.61vQlIW3Vc.UuVvdp7ja";
- function jsonbinEnabled(){return !!(JSONBIN_BIN_ID&&JSONBIN_API_KEY);}
+ /* ===== Firebase Realtime Database (क्लाउड में रिमार्क सेव) ===== */
+ const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDfQEJq-NkPlHyyyuz-7sIZtYXPW7qzcb4",
+  authDomain: "mgn-katni-remarks.firebaseapp.com",
+  databaseURL: "https://mgn-katni-remarks-default-rtdb.firebaseio.com",
+  projectId: "mgn-katni-remarks",
+  storageBucket: "mgn-katni-remarks.firebasestorage.app",
+  messagingSenderId: "865561956022",
+  appId: "1:865561956022:web:9b22142a3855391cbd6017",
+  measurementId: "G-0GQZ73X9ZG"
+ };
+ const FB_PATH="remarks";
+ let FB_APP=null, FB_DB=null;
+ function fbInit(){
+  if(FB_DB)return true;
+  try{
+   if(!window.firebase||!window.firebase.initializeApp)return false;
+   if(!FB_APP)FB_APP=window.firebase.initializeApp(FIREBASE_CONFIG);
+   FB_DB=window.firebase.database(FB_APP);
+   return true;
+  }catch(e){return false;}
+ }
+ function fbEnabled(){return fbInit();}
 
  const OPTIONS=[
   {id:"delete",label:"डिलीट",icon:"🗑️",bg:"#ffebee",fg:"#c62828"},
@@ -33,24 +49,18 @@
  function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 
  function persistLocal(){try{localStorage.setItem(RMK_STORE,JSON.stringify(remarks));}catch(e){}}
- async function persistJsonbin(){
-  if(!jsonbinEnabled())return false;
+ async function persistFirebase(){
+  if(!fbEnabled())return false;
   try{
-   const res=await fetch("https://api.jsonbin.io/v3/b/"+JSONBIN_BIN_ID,{
-    method:"PUT",
-    headers:{
-     "Content-Type":"application/json",
-     "X-Master-Key":JSONBIN_API_KEY,
-     "X-Bin-Versioning":"false"
-    },
-    body:JSON.stringify({remarks:remarks})
-   });
-   return res.ok;
+   const payload={};
+   remarks.forEach(r=>{payload[r.work_code]=r;});
+   await FB_DB.ref(FB_PATH).set(payload);
+   return true;
   }catch(e){return false;}
  }
  async function persistRemote(){
-  /* पहले JSONbin पर सेव करने की कोशिश (अगर BIN_ID/API_KEY डाली हों) */
-  if(await persistJsonbin())return true;
+  /* पहले Firebase पर सेव करने की कोशिश */
+  if(await persistFirebase())return true;
   /* server.py के /save-remark पर POST — remark.json डिस्क पर लिखता है */
   try{
    const res=await fetch("save-remark",{
@@ -288,24 +298,21 @@
   for(const u of getRepoUrls(fname)){try{const r=await fetch(u,{cache:"no-store"});if(r.ok)return await r.text();}catch(e){}}
   return null;
  }
- async function loadJsonbin(){
-  if(!jsonbinEnabled())return false;
+ async function loadFirebase(){
+  if(!fbEnabled())return false;
   try{
-   const res=await fetch("https://api.jsonbin.io/v3/b/"+JSONBIN_BIN_ID+"/latest",{
-    headers:{"X-Master-Key":JSONBIN_API_KEY}
-   });
-   if(!res.ok)return false;
-   const j=await res.json();
-   const d=j&&j.record;
-   /* bin में या तो सीधा [] या {remarks:[...]} हो सकता है */
-   const arr=Array.isArray(d)?d:(d&&Array.isArray(d.remarks)?d.remarks:null);
-   if(arr){remarks=arr;persistLocal();refreshRmkBar();return true;}
+   const snap=await FB_DB.ref(FB_PATH).once("value");
+   const val=snap.val();
+   if(!val)return false;
+   const arr=[];
+   Object.keys(val).forEach(code=>{const r=val[code];if(r&&typeof r==="object"){r.work_code=r.work_code||code;arr.push(r);}});
+   if(arr.length){remarks=arr;persistLocal();refreshRmkBar();return true;}
    return false;
   }catch(e){return false;}
  }
  async function loadRemote(){
-  /* JSONbin चालू हो तो पहले वहाँ से (क्लाउड ही असली स्रोत) */
-  if(await loadJsonbin())return;
+  /* Firebase चालू हो तो पहले वहाँ से (क्लाउड ही असली स्रोत) */
+  if(await loadFirebase())return;
   const txt=await fetchFromSources(RMK_FILE);
   if(!txt)return;
   try{
